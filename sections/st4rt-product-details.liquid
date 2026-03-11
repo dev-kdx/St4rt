@@ -1,0 +1,849 @@
+{% comment %}
+  ST4RT Product Details
+  - Sección para mostrar: categoría, título, descripción, imagen del producto, botón (App Block Releasit) y acordeón de beneficios.
+  - Beneficios: se renderiza SOLO si hay entre 3 y 5 beneficios válidos (título no vacío).
+{% endcomment %}
+
+{{ 'st4rt-product-details.css' | asset_url | stylesheet_tag }}
+
+<div class="st4rt-pd-shell">
+<section class="st4rt-pd" data-st4rt-pd>
+  {%- liquid
+    assign pd_product = section.settings.product
+    if pd_product == blank
+      assign pd_product = product
+    endif
+
+    assign benefits_valid = 0
+    for block in section.blocks
+      if block.type == 'benefit'
+        if block.settings.title != blank
+          assign benefits_valid = benefits_valid | plus: 1
+        endif
+      endif
+    endfor
+
+    assign show_benefits = false
+    if benefits_valid >= 3 and benefits_valid <= 5
+      assign show_benefits = true
+    endif
+
+    assign has_app_block = false
+    for block in section.blocks
+      if block.type == '@app'
+        assign has_app_block = true
+      endif
+    endfor
+
+    assign bg_img = section.settings.bg_image
+    assign hero_loading = 'lazy'
+    assign hero_fetchpriority = 'auto'
+    if section.index == 1
+      assign hero_loading = 'eager'
+      assign hero_fetchpriority = 'high'
+    endif
+
+    assign bg_overlay_alpha = section.settings.bg_overlay_opacity | divided_by: 100.0
+    assign benefits_bg_alpha = section.settings.benefits_container_bg_opacity | divided_by: 100.0
+    assign benefit_item_bg_alpha = section.settings.benefit_item_bg_opacity | divided_by: 100.0
+    assign media_bg_alpha = section.settings.media_bg_opacity | divided_by: 100.0
+  -%}
+
+  {%- style -%}
+    {{ section.settings.title_font | font_face: font_display: 'swap' }}
+    {{ section.settings.desc_font | font_face: font_display: 'swap' }}
+    {{ section.settings.cat_font | font_face: font_display: 'swap' }}
+    {{ section.settings.benefit_title_font | font_face: font_display: 'swap' }}
+    {{ section.settings.benefit_desc_font | font_face: font_display: 'swap' }}
+
+    /* ST4RT PD — Vars */
+    #shopify-section-{{ section.id }} .st4rt-pd-shell,
+    #shopify-section-{{ section.id }} .st4rt-pd{
+      --pd-bg-o: {{ section.settings.bg_opacity | divided_by: 100.0 }};
+      --pd-overlay-color: {{ section.settings.bg_overlay_color | color_modify: 'alpha', bg_overlay_alpha }};
+      --pd-section-bg: {{ section.settings.section_bg_color }};
+      --pd-benefits-bg: {{ section.settings.benefits_container_bg_color | color_modify: 'alpha', benefits_bg_alpha }};
+      --pd-benefit-item-bg: {{ section.settings.benefit_item_bg_color | color_modify: 'alpha', benefit_item_bg_alpha }};
+      --pd-media-bg: {{ section.settings.media_bg_color | color_modify: 'alpha', media_bg_alpha }};
+      --pd-img-scale: {{ section.settings.product_image_scale | divided_by: 100.0 }};
+      --pd-pad-top: {{ section.settings.container_padding_top }}px;
+      --pd-pad-right: {{ section.settings.container_padding_right }}px;
+      --pd-pad-bottom: {{ section.settings.container_padding_bottom }}px;
+      --pd-pad-left: {{ section.settings.container_padding_left }}px;
+      --pd-pad-top-mobile: {{ section.settings.container_padding_top_mobile }}px;
+      --pd-pad-right-mobile: {{ section.settings.container_padding_right_mobile }}px;
+      --pd-pad-bottom-mobile: {{ section.settings.container_padding_bottom_mobile }}px;
+      --pd-pad-left-mobile: {{ section.settings.container_padding_left_mobile }}px;
+      --pd-outer-bg: {{ section.settings.outer_spacing_bg_color }};
+      --pd-margin-top: {{ section.settings.container_margin_top }}px;
+      --pd-margin-right: {{ section.settings.container_margin_right }}px;
+      --pd-margin-bottom: {{ section.settings.container_margin_bottom }}px;
+      --pd-margin-left: {{ section.settings.container_margin_left }}px;
+      --pd-margin-top-mobile: {{ section.settings.container_margin_top_mobile }}px;
+      --pd-margin-right-mobile: {{ section.settings.container_margin_right_mobile }}px;
+      --pd-margin-bottom-mobile: {{ section.settings.container_margin_bottom_mobile }}px;
+      --pd-margin-left-mobile: {{ section.settings.container_margin_left_mobile }}px;
+      --pd-title-size: {{ section.settings.title_size }}px;
+      --pd-title-size-mobile: {{ section.settings.title_size_mobile }}px;
+      --pd-desc-size: {{ section.settings.desc_size }}px;
+      --pd-desc-size-mobile: {{ section.settings.desc_size_mobile }}px;
+      --pd-cat-size: {{ section.settings.cat_size }}px;
+      --pd-title-weight: {{ section.settings.title_weight }};
+      --pd-cat-weight: {{ section.settings.cat_weight }};
+      --pd-benefit-title-weight: {{ section.settings.benefit_title_weight }};
+
+      --pd-benefit-title-size: {{ section.settings.benefit_title_size }}px;
+      --pd-benefit-desc-size: {{ section.settings.benefit_desc_size }}px;
+      --pd-benefits-heading-size: {{ section.settings.benefits_heading_size }}px;
+
+      --pd-title-font: {{ section.settings.title_font.family }}, {{ section.settings.title_font.fallback_families }};
+      --pd-desc-font: {{ section.settings.desc_font.family }}, {{ section.settings.desc_font.fallback_families }};
+      --pd-cat-font: {{ section.settings.cat_font.family }}, {{ section.settings.cat_font.fallback_families }};
+      --pd-benefit-title-font: {{ section.settings.benefit_title_font.family }}, {{ section.settings.benefit_title_font.fallback_families }};
+      --pd-benefit-desc-font: {{ section.settings.benefit_desc_font.family }}, {{ section.settings.benefit_desc_font.fallback_families }};
+
+      --pd-title-color: {{ section.settings.title_color }};
+      --pd-desc-color: {{ section.settings.desc_color }};
+      --pd-cat-color: {{ section.settings.cat_color }};
+      --pd-benefit-title-color: {{ section.settings.benefit_title_color }};
+      --pd-benefit-desc-color: {{ section.settings.benefit_desc_color }};
+      --pd-benefits-heading-color: {{ section.settings.benefits_heading_color }};
+      --pd-sep-color: {{ section.settings.separator_color }};
+    }
+
+    {% if bg_img != blank %}
+      #shopify-section-{{ section.id }} .st4rt-pd-shell,
+    #shopify-section-{{ section.id }} .st4rt-pd{ --pd-bg-url: url('{{ bg_img | image_url: width: 2000 }}'); }
+    {% endif %}
+  {%- endstyle -%}
+
+  <div class="st4rt-pd__inner">
+    <!-- ST4RT PD — Left: texto + botón -->
+    <div class="st4rt-pd__left">
+      {% if section.settings.category_text != blank %}
+        <div class="st4rt-pd__category">
+          {{ section.settings.category_text }}
+        </div>
+      {% endif %}
+
+      {% if section.settings.title_text != blank %}
+        <h2 class="st4rt-pd__title">
+          {{ section.settings.title_text }}
+        </h2>
+      {% elsif pd_product != blank %}
+        <h2 class="st4rt-pd__title">
+          {{ pd_product.title }}
+        </h2>
+      {% endif %}
+
+      {% if section.settings.desc_text != blank %}
+        <div class="st4rt-pd__desc">
+          {{ section.settings.desc_text }}
+        </div>
+      {% elsif pd_product != blank and pd_product.description != blank %}
+        <div class="st4rt-pd__desc">
+          {{ pd_product.description | strip_html | truncate: 220 }}
+        </div>
+      {% endif %}
+
+      {% comment %}
+        ST4RT PD — Slot para Releasit (App Block)
+        - En el editor: agrega un bloque de app (Releasit) dentro de esta sección.
+      {% endcomment %}
+      <div class="st4rt-pd__buy">
+        {%- for block in section.blocks -%}
+          {%- if block.type == '@app' -%}
+            {% render block %}
+          {%- endif -%}
+        {%- endfor -%}
+
+        {% unless has_app_block %}
+          {% if pd_product != blank %}
+            {% form 'product', pd_product, class: 'st4rt-pd__fallback-form' %}
+              <input type="hidden" name="id" value="{{ pd_product.selected_or_first_available_variant.id }}">
+              <button type="submit" class="st4rt-pd__fallback-btn">
+                {{ section.settings.fallback_cta_label | escape }}
+              </button>
+            {% endform %}
+          {% endif %}
+        {% endunless %}
+      </div>
+    </div>
+
+    <!-- ST4RT PD — Center: packshot -->
+    <div class="st4rt-pd__center">
+      <div class="st4rt-pd__media">
+        {%- if section.settings.image_override != blank -%}
+          {%- assign img = section.settings.image_override -%}
+          <img
+            class="st4rt-pd__img"
+            src="{{ img | image_url: width: 1200 }}"
+            srcset="{{ img | image_url: width: 480 }} 480w, {{ img | image_url: width: 720 }} 720w, {{ img | image_url: width: 960 }} 960w, {{ img | image_url: width: 1200 }} 1200w"
+            sizes="(max-width: 749px) 92vw, (max-width: 1200px) 45vw, 520px"
+            width="{{ img.width }}"
+            height="{{ img.height }}"
+            loading="{{ hero_loading }}"
+            fetchpriority="{{ hero_fetchpriority }}"
+            alt="{{ img.alt | escape }}"
+          >
+        {%- elsif pd_product != blank and pd_product.featured_media != blank -%}
+          {%- assign pm = pd_product.featured_media -%}
+          <img
+            class="st4rt-pd__img"
+            src="{{ pm | image_url: width: 1200 }}"
+            srcset="{{ pm | image_url: width: 480 }} 480w, {{ pm | image_url: width: 720 }} 720w, {{ pm | image_url: width: 960 }} 960w, {{ pm | image_url: width: 1200 }} 1200w"
+            sizes="(max-width: 749px) 92vw, (max-width: 1200px) 45vw, 520px"
+            width="{{ pm.preview_image.width }}"
+            height="{{ pm.preview_image.height }}"
+            loading="{{ hero_loading }}"
+            fetchpriority="{{ hero_fetchpriority }}"
+            alt="{{ pd_product.title | escape }}"
+          >
+        {%- endif -%}
+      </div>
+    </div>
+
+    <!-- ST4RT PD — Right: beneficios -->
+    {% if show_benefits %}
+      <div class="st4rt-pd__right">
+        <div class="st4rt-pd__benefits" data-pd-accordion>
+          {% if section.settings.benefits_heading != blank %}
+            <h3 class="st4rt-pd__benefits-heading">{{ section.settings.benefits_heading }}</h3>
+          {% endif %}
+          {%- assign idx = 0 -%}
+          {%- for block in section.blocks -%}
+            {%- if block.type == 'benefit' and block.settings.title != blank -%}
+              {%- assign idx = idx | plus: 1 -%}
+              <div class="st4rt-pd__benefit" {{ block.shopify_attributes }}>
+                <button
+                  class="st4rt-pd__benefit-head"
+                  type="button"
+                  id="pd-toggle-{{ section.id }}-{{ block.id }}"
+                  data-pd-toggle
+                  aria-expanded="{% if idx == 1 %}true{% else %}false{% endif %}"
+                  aria-controls="pd-panel-{{ section.id }}-{{ block.id }}"
+                >
+                  <span class="st4rt-pd__benefit-left">
+                    {% if block.settings.icon != blank %}
+                      <img
+                        class="st4rt-pd__benefit-icon"
+                        src="{{ block.settings.icon | image_url: width: 40 }}"
+                        srcset="{{ block.settings.icon | image_url: width: 24 }} 1x, {{ block.settings.icon | image_url: width: 40 }} 2x"
+                        width="18"
+                        height="18"
+                        loading="lazy"
+                        alt="{{ block.settings.title | escape }}"
+                      >
+                    {% endif %}
+
+                    <span class="st4rt-pd__benefit-title">
+                      {{ block.settings.title }}
+                    </span>
+                  </span>
+
+                  <span class="st4rt-pd__benefit-sign" aria-hidden="true" data-pd-sign>
+                    {% if idx == 1 %}−{% else %}+{% endif %}
+                  </span>
+                </button>
+
+                <div
+                  id="pd-panel-{{ section.id }}-{{ block.id }}"
+                  class="st4rt-pd__benefit-panel"
+                  role="region"
+                  aria-labelledby="pd-toggle-{{ section.id }}-{{ block.id }}"
+                  aria-hidden="{% if idx == 1 %}false{% else %}true{% endif %}"
+                  data-pd-panel
+                  {% if idx == 1 %}data-open{% else %}hidden{% endif %}
+                >
+                  {% if block.settings.text != blank %}
+                    <div class="st4rt-pd__benefit-desc">
+                      {{ block.settings.text }}
+                    </div>
+                  {% endif %}
+                </div>
+
+                <div class="st4rt-pd__sep" aria-hidden="true"></div>
+              </div>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+</div>
+
+{% if show_benefits %}
+  <script src="{{ 'st4rt-product-details.js' | asset_url }}" defer></script>
+{% endif %}
+
+{% schema %}
+{
+  "name": "St4rt Product Details",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Content"
+    },
+    {
+      "type": "product",
+      "id": "product",
+      "label": "Product",
+      "info": "If empty, uses current product (on product template)."
+    },
+    {
+      "type": "text",
+      "id": "category_text",
+      "label": "Category text",
+      "default": "Apariencia"
+    },
+    {
+      "type": "text",
+      "id": "title_text",
+      "label": "Title text",
+      "default": "WASH & SHINE"
+    },
+    {
+      "type": "richtext",
+      "id": "desc_text",
+      "label": "Description text",
+      "default": "<p>Lavado cerámico hidro con tecnología SiO2 para intensificar el brillo.</p>"
+    },
+    {
+      "type": "text",
+      "id": "fallback_cta_label",
+      "label": "Fallback CTA label",
+      "default": "Agregar al carrito"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_override",
+      "label": "Product image override"
+    },
+    {
+      "type": "header",
+      "content": "Background image"
+    },
+    {
+      "type": "image_picker",
+      "id": "bg_image",
+      "label": "Background image"
+    },
+    {
+      "type": "range",
+      "id": "bg_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Background opacity",
+      "default": 35
+    },
+    {
+      "type": "color",
+      "id": "bg_overlay_color",
+      "label": "Background overlay color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "bg_overlay_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Background overlay opacity",
+      "default": 20
+    },
+    {
+      "type": "color",
+      "id": "section_bg_color",
+      "label": "Section background color",
+      "default": "#101010"
+    },
+    {
+      "type": "header",
+      "content": "Benefits backgrounds"
+    },
+    {
+      "type": "color",
+      "id": "benefits_container_bg_color",
+      "label": "Benefits container background color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "benefits_container_bg_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Benefits container background opacity",
+      "default": 34
+    },
+    {
+      "type": "color",
+      "id": "benefit_item_bg_color",
+      "label": "Benefit item background color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "range",
+      "id": "benefit_item_bg_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Benefit item background opacity",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "product_image_scale",
+      "min": 60,
+      "max": 140,
+      "step": 1,
+      "unit": "%",
+      "label": "Product image scale",
+      "default": 100
+    },
+    {
+      "type": "color",
+      "id": "media_bg_color",
+      "label": "Product media background color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "media_bg_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "Product media background opacity",
+      "default": 12
+    },
+    {
+      "type": "header",
+      "content": "Container spacing"
+    },
+    {
+      "type": "range",
+      "id": "container_padding_top",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding top",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "container_padding_right",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding right",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "container_padding_bottom",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding bottom",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "container_padding_left",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding left",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "container_margin_top",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Margin top",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "container_margin_right",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Margin right",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "container_margin_bottom",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Margin bottom",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "container_margin_left",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Margin left",
+      "default": 0
+    },
+    {
+      "type": "header",
+      "content": "Container spacing (mobile)"
+    },
+    {
+      "type": "range",
+      "id": "container_padding_top_mobile",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding top (mobile)",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "container_padding_right_mobile",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding right (mobile)",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "container_padding_bottom_mobile",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding bottom (mobile)",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "container_padding_left_mobile",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Padding left (mobile)",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "container_margin_top_mobile",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Margin top (mobile)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "container_margin_right_mobile",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Margin right (mobile)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "container_margin_bottom_mobile",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Margin bottom (mobile)",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "container_margin_left_mobile",
+      "min": 0,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "label": "Margin left (mobile)",
+      "default": 0
+    },
+    {
+      "type": "color",
+      "id": "outer_spacing_bg_color",
+      "label": "Outer spacing background color",
+      "default": "#101010"
+    },
+    {
+      "type": "header",
+      "content": "Typography"
+    },
+    {
+      "type": "font_picker",
+      "id": "title_font",
+      "label": "Title font",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "range",
+      "id": "title_size",
+      "min": 18,
+      "max": 72,
+      "step": 1,
+      "unit": "px",
+      "label": "Title size (desktop)",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "title_size_mobile",
+      "min": 16,
+      "max": 54,
+      "step": 1,
+      "unit": "px",
+      "label": "Title size (mobile)",
+      "default": 42
+    },
+    {
+      "type": "select",
+      "id": "title_weight",
+      "label": "Title weight",
+      "default": "800",
+      "options": [
+        { "value": "400", "label": "400" },
+        { "value": "500", "label": "500" },
+        { "value": "600", "label": "600" },
+        { "value": "700", "label": "700" },
+        { "value": "800", "label": "800" },
+        { "value": "900", "label": "900" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Title color",
+      "default": "#FFFFFF"
+    },
+
+    {
+      "type": "font_picker",
+      "id": "desc_font",
+      "label": "Description font",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "range",
+      "id": "desc_size",
+      "min": 12,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "label": "Description size (desktop)",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "desc_size_mobile",
+      "min": 11,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Description size (mobile)",
+      "default": 14
+    },
+    {
+      "type": "color",
+      "id": "desc_color",
+      "label": "Description color",
+      "default": "#EDEDED"
+    },
+
+    {
+      "type": "font_picker",
+      "id": "cat_font",
+      "label": "Category font",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "range",
+      "id": "cat_size",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "label": "Category size",
+      "default": 14
+    },
+    {
+      "type": "select",
+      "id": "cat_weight",
+      "label": "Category weight",
+      "default": "700",
+      "options": [
+        { "value": "400", "label": "400" },
+        { "value": "500", "label": "500" },
+        { "value": "600", "label": "600" },
+        { "value": "700", "label": "700" },
+        { "value": "800", "label": "800" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "cat_color",
+      "label": "Category color",
+      "default": "#FF4FD8"
+    },
+
+    {
+      "type": "header",
+      "content": "Benefits typography"
+    },
+    {
+      "type": "text",
+      "id": "benefits_heading",
+      "label": "Benefits heading",
+      "default": "Beneficios"
+    },
+    {
+      "type": "range",
+      "id": "benefits_heading_size",
+      "min": 12,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "label": "Benefits heading size",
+      "default": 20
+    },
+    {
+      "type": "color",
+      "id": "benefits_heading_color",
+      "label": "Benefits heading color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "font_picker",
+      "id": "benefit_title_font",
+      "label": "Benefit title font",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "range",
+      "id": "benefit_title_size",
+      "min": 12,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "label": "Benefit title size",
+      "default": 16
+    },
+    {
+      "type": "select",
+      "id": "benefit_title_weight",
+      "label": "Benefit title weight",
+      "default": "800",
+      "options": [
+        { "value": "600", "label": "600" },
+        { "value": "700", "label": "700" },
+        { "value": "800", "label": "800" },
+        { "value": "900", "label": "900" }
+      ]
+    },
+    {
+      "type": "color",
+      "id": "benefit_title_color",
+      "label": "Benefit title color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "font_picker",
+      "id": "benefit_desc_font",
+      "label": "Benefit description font",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "range",
+      "id": "benefit_desc_size",
+      "min": 12,
+      "max": 20,
+      "step": 1,
+      "unit": "px",
+      "label": "Benefit description size",
+      "default": 13
+    },
+    {
+      "type": "color",
+      "id": "benefit_desc_color",
+      "label": "Benefit description color",
+      "default": "#EDEDED"
+    },
+    {
+      "type": "color",
+      "id": "separator_color",
+      "label": "Separator color",
+      "default": "rgba(255,255,255,0.25)"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "benefit",
+      "name": "Benefit",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "icon",
+          "label": "Icon"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Cerámica híbrida"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Description",
+          "default": "<p>Repele residuos y mejora la formación de gotas de agua.</p>"
+        }
+      ]
+    },
+    {
+      "type": "@app"
+    }
+  ],
+  "max_blocks": 6,
+  "presets": [
+    {
+      "name": "St4rt Product Details",
+      "blocks": [
+        { "type": "benefit" },
+        { "type": "benefit" },
+        { "type": "benefit" }
+      ]
+    }
+  ]
+}
+{% endschema %}

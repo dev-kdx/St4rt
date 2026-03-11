@@ -1,0 +1,260 @@
+{% comment %}
+  ST4RT Scroll Vertical Slides
+  Sección tipo “scrollytelling” con header global y slides verticales (imagen + título + subtítulo + CTA por slide).
+{% endcomment %}
+
+<section
+  class="st4rt-svsc {% if section.settings.enable_snap %}is-snap{% endif %}"
+  data-st4rt-svsc
+  data-section-id="{{ section.id }}"
+>
+  {% comment %}
+    ST4RT SVSC Header
+    Header global normal (no sticky) con título y subtítulo multilínea.
+  {% endcomment %}
+  <header class="st4rt-svsc__header">
+    {% if section.settings.heading != blank %}
+      <h2 class="st4rt-svsc__heading">{{ section.settings.heading }}</h2>
+    {% endif %}
+
+    {% if section.settings.subheading != blank %}
+      <p class="st4rt-svsc__subheading">{{ section.settings.subheading }}</p>
+    {% endif %}
+  </header>
+
+  {% comment %}
+    ST4RT SVSC Viewport
+    Contenedor con fondo/gradiente fijo. Dentro viven los slides en scroll vertical.
+  {% endcomment %}
+  <div
+    class="st4rt-svsc__viewport"
+    style="
+      --svsc-pad-y: {{ section.settings.pad_y }}px;
+      --svsc-pad-x: {{ section.settings.pad_x }}px;
+      --svsc-radius: {{ section.settings.radius }}px;
+      --svsc-border-w: {{ section.settings.border_w }}px;
+      --svsc-border-c: {{ section.settings.border_c }};
+      --svsc-bg-1: {{ section.settings.bg_1 }};
+      --svsc-bg-2: {{ section.settings.bg_2 }};
+      --svsc-bg-3: {{ section.settings.bg_3 }};
+      --svsc-slide-gap: {{ section.settings.slide_gap }}px;
+      --svsc-slide-min-h-m: {{ section.settings.slide_min_h_m }}vh;
+      --svsc-slide-min-h-d: {{ section.settings.slide_min_h_d }}vh;
+    "
+  >
+    {% comment %}
+      ST4RT SVSC Track
+      Lista vertical de slides. Se marca el slide visible con JS (is-inview) para animaciones suaves.
+    {% endcomment %}
+    <div class="st4rt-svsc__track" role="list">
+      {% for block in section.blocks %}
+        {% assign img = block.settings.image %}
+        <article
+          class="st4rt-svsc__slide"
+          role="listitem"
+          data-st4rt-svsc-slide
+          {{ block.shopify_attributes }}
+        >
+          <div class="st4rt-svsc__slide-inner">
+            {% comment %}
+              ST4RT SVSC Media
+              Imagen del producto (optimizada). Primera imagen eager para mejor LCP.
+            {% endcomment %}
+            <div class="st4rt-svsc__media">
+              {% if img != blank %}
+                <img
+                  class="st4rt-svsc__img"
+                  src="{{ img | image_url: width: 1200 }}"
+                  srcset="
+                    {{ img | image_url: width: 480 }} 480w,
+                    {{ img | image_url: width: 768 }} 768w,
+                    {{ img | image_url: width: 1024 }} 1024w,
+                    {{ img | image_url: width: 1400 }} 1400w
+                  "
+                  sizes="(min-width: 990px) 45vw, 92vw"
+                  width="{{ img.width }}"
+                  height="{{ img.height }}"
+                  alt="{{ img.alt | escape }}"
+                  loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                  decoding="async"
+                  {% if forloop.first %}fetchpriority="high"{% endif %}
+                >
+              {% else %}
+                <div class="st4rt-svsc__img-ph" aria-hidden="true"></div>
+              {% endif %}
+            </div>
+
+            {% comment %}
+              ST4RT SVSC Content
+              Título, subtítulo y CTA por slide.
+            {% endcomment %}
+            <div class="st4rt-svsc__content">
+              {% if block.settings.title != blank %}
+                <h3 class="st4rt-svsc__title">{{ block.settings.title }}</h3>
+              {% endif %}
+
+              {% if block.settings.text != blank %}
+                <p class="st4rt-svsc__text">{{ block.settings.text }}</p>
+              {% endif %}
+
+              {% if block.settings.cta_label != blank and block.settings.cta_url != blank %}
+                <a
+                  class="st4rt-btn st4rt-svsc__cta"
+                  href="{{ block.settings.cta_url }}"
+                  aria-label="{{ block.settings.cta_label | escape }}"
+                >
+                  {{ block.settings.cta_label }}
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "ST4RT Scroll Vertical",
+  "tag": "section",
+  "class": "section",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "enable_snap",
+      "label": "Activar scroll snap (encaje por slide)",
+      "default": false
+    },
+    {
+      "type": "textarea",
+      "id": "heading",
+      "label": "Título global",
+      "default": "Podium Series"
+    },
+    {
+      "type": "textarea",
+      "id": "subheading",
+      "label": "Subtítulo global",
+      "default": "Cuidado inteligente para tu vehículo"
+    },
+
+    { "type": "header", "content": "Fondo y contenedor" },
+    {
+      "type": "color",
+      "id": "bg_1",
+      "label": "Color gradiente 1",
+      "default": "#0B0D10"
+    },
+    {
+      "type": "color",
+      "id": "bg_2",
+      "label": "Color gradiente 2",
+      "default": "#111827"
+    },
+    {
+      "type": "color",
+      "id": "bg_3",
+      "label": "Color gradiente 3",
+      "default": "#1F232A"
+    },
+    {
+      "type": "range",
+      "id": "radius",
+      "label": "Radio del contenedor",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "border_w",
+      "label": "Grosor borde",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "default": 1
+    },
+    {
+      "type": "color",
+      "id": "border_c",
+      "label": "Color borde",
+      "default": "rgba(255,255,255,0.08)"
+    },
+
+    { "type": "header", "content": "Espaciado" },
+    {
+      "type": "range",
+      "id": "pad_y",
+      "label": "Padding vertical interno (px)",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "pad_x",
+      "label": "Padding horizontal interno (px)",
+      "min": 0,
+      "max": 80,
+      "step": 4,
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "slide_gap",
+      "label": "Separación entre slides (px)",
+      "min": 0,
+      "max": 48,
+      "step": 4,
+      "default": 16
+    },
+
+    { "type": "header", "content": "Altura de slides" },
+    {
+      "type": "range",
+      "id": "slide_min_h_m",
+      "label": "Alto mínimo slide en mobile (vh)",
+      "min": 45,
+      "max": 100,
+      "step": 1,
+      "default": 72
+    },
+    {
+      "type": "range",
+      "id": "slide_min_h_d",
+      "label": "Alto mínimo slide en desktop (vh)",
+      "min": 45,
+      "max": 100,
+      "step": 1,
+      "default": 78
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Imagen" },
+        { "type": "text", "id": "title", "label": "Título", "default": "Nombre del producto" },
+        { "type": "textarea", "id": "text", "label": "Subtítulo", "default": "Beneficio principal en una o dos líneas." },
+        { "type": "text", "id": "cta_label", "label": "Texto CTA", "default": "Comprar ahora" },
+        { "type": "url", "id": "cta_url", "label": "Link CTA" }
+      ]
+    }
+  ],
+  "max_blocks": 12,
+  "presets": [
+    {
+      "name": "ST4RT Scroll Vertical Slides",
+      "blocks": [
+        { "type": "slide" },
+        { "type": "slide" },
+        { "type": "slide" }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,411 @@
+{% comment %}
+  File: sections/st4rt-testimonials-carousel.liquid
+  Requires:
+    - assets/st4rt-testimonials-carousel.css
+    - assets/st4rt-testimonials-carousel.js
+    - snippets/st4rt-testimonial-card.liquid
+{% endcomment %}
+
+{{ 'st4rt-testimonials-carousel.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'st4rt-testimonials-carousel.js' | asset_url }}" defer></script>
+
+{% liquid
+  assign sid = section.id
+  assign full_width = section.settings.full_width
+  assign cols_desktop = section.settings.columns_desktop | default: 3
+  assign cols_mobile = section.settings.columns_mobile | default: 1
+
+  assign filter_product = section.settings.filter_product
+  assign filter_category = section.settings.filter_category
+  assign filter_mode = section.settings.filter_mode
+  assign max_items = section.settings.max_items
+
+  assign has_product_filter = false
+  if filter_product != blank
+    assign has_product_filter = true
+  endif
+
+  assign has_category_filter = false
+  if filter_category != blank and filter_category != 'all'
+    assign has_category_filter = true
+  endif
+
+  assign wants_filter = false
+  if has_product_filter or has_category_filter
+    assign wants_filter = true
+  endif
+
+  assign show_all = true
+  if filter_mode == 'only_matches' and wants_filter
+    assign show_all = false
+  endif
+
+  assign prefer_matches = false
+  if filter_mode == 'prefer_matches' and wants_filter
+    assign prefer_matches = true
+  endif
+
+  assign matches_ids = ''
+  assign nonmatches_ids = ''
+
+  for block in section.blocks
+    assign bcat = block.settings.category | default: 'all'
+    assign bprod = block.settings.product
+    assign is_match = true
+
+    if wants_filter
+      if has_product_filter
+        if bprod == blank or bprod.id != filter_product.id
+          assign is_match = false
+        endif
+      endif
+
+      if has_category_filter
+        if bcat == blank or bcat != filter_category
+          assign is_match = false
+        endif
+      endif
+    endif
+
+    if is_match
+      assign matches_ids = matches_ids | append: block.id | append: '||'
+    else
+      assign nonmatches_ids = nonmatches_ids | append: block.id | append: '||'
+    endif
+  endfor
+
+  assign matches_arr = matches_ids | split: '||'
+  assign nonmatches_arr = nonmatches_ids | split: '||'
+
+  assign rendered_count = 0
+%}
+
+<section
+  id="st4rt-testimonials-{{ sid }}"
+  class="st4rt-testimonials {% if full_width %}is-fullwidth{% endif %}"
+  data-st4rt-testimonials
+  data-section-id="{{ sid }}"
+  data-cols-desktop="{{ cols_desktop }}"
+  data-cols-mobile="{{ cols_mobile }}"
+  data-autoplay="{{ section.settings.autoplay }}"
+  data-autoplay-seconds="{{ section.settings.autoplay_seconds }}"
+  style="
+    --st4rt-sec-bg-d: {{ section.settings.section_bg_desktop }};
+    --st4rt-sec-bg-m: {{ section.settings.section_bg_mobile }};
+
+    --st4rt-card-bg-d: {{ section.settings.card_bg_desktop }};
+    --st4rt-card-bg-m: {{ section.settings.card_bg_mobile }};
+
+    --st4rt-kicker-c-d: {{ section.settings.kicker_color_desktop }};
+    --st4rt-kicker-c-m: {{ section.settings.kicker_color_mobile }};
+
+    --st4rt-title-c-d: {{ section.settings.title_color_desktop }};
+    --st4rt-title-c-m: {{ section.settings.title_color_mobile }};
+
+    --st4rt-name-c-d: {{ section.settings.name_color_desktop }};
+    --st4rt-name-c-m: {{ section.settings.name_color_mobile }};
+
+    --st4rt-text-c-d: {{ section.settings.text_color_desktop }};
+    --st4rt-text-c-m: {{ section.settings.text_color_mobile }};
+
+    --st4rt-tag-bg-d: {{ section.settings.tag_bg_desktop }};
+    --st4rt-tag-bg-m: {{ section.settings.tag_bg_mobile }};
+    --st4rt-tag-c-d: {{ section.settings.tag_color_desktop }};
+    --st4rt-tag-c-m: {{ section.settings.tag_color_mobile }};
+
+    --st4rt-verified-c-d: {{ section.settings.verified_color_desktop }};
+    --st4rt-verified-c-m: {{ section.settings.verified_color_mobile }};
+
+    --st4rt-stars-c: {{ section.settings.stars_color }};
+
+    --st4rt-dot-c: {{ section.settings.dots_color }};
+    --st4rt-dot-active-c: {{ section.settings.dots_active_color }};
+
+    --st4rt-shadow-c-d: {{ section.settings.card_shadow_color_desktop }};
+    --st4rt-shadow-c-m: {{ section.settings.card_shadow_color_mobile }};
+
+    --st4rt-nav-bg: {{ section.settings.nav_bg }};
+    --st4rt-nav-bd: {{ section.settings.nav_border }};
+    --st4rt-nav-c: {{ section.settings.nav_color }};
+
+    --st4rt-card-radius: {{ section.settings.card_radius }}px;
+
+    --st4rt-card-h-d: {{ section.settings.card_height_desktop }}px;
+    --st4rt-card-h-m: {{ section.settings.card_height_mobile }}px;
+
+    --st4rt-gap-d: {{ section.settings.gap_desktop }}px;
+    --st4rt-gap-m: {{ section.settings.gap_mobile }}px;
+
+    --st4rt-pad-y: {{ section.settings.padding_y }}px;
+
+    --st4rt-text-lines-d: {{ section.settings.text_lines_desktop }};
+    --st4rt-text-lines-m: {{ section.settings.text_lines_mobile }};
+  "
+>
+  <div class="st4rt-testimonials__wrap {% unless full_width %}page-width{% endunless %}">
+    {% if section.settings.kicker != blank or section.settings.title != blank %}
+      <header class="st4rt-testimonials__header">
+        {% if section.settings.kicker != blank %}
+          <div class="st4rt-testimonials__kicker">{{ section.settings.kicker | escape }}</div>
+        {% endif %}
+        {% if section.settings.title != blank %}
+          <h2 class="st4rt-testimonials__title">{{ section.settings.title | escape }}</h2>
+        {% endif %}
+      </header>
+    {% endif %}
+
+    <div class="st4rt-testimonials__carousel" aria-roledescription="carousel">
+      <button class="st4rt-testimonials__nav st4rt-testimonials__nav--prev" type="button" aria-label="anterior">
+        <span aria-hidden="true">‹</span>
+      </button>
+
+      <div class="st4rt-testimonials__track" tabindex="0" role="group" aria-label="testimonios">
+        {% if prefer_matches %}
+          {% for bid in matches_arr %}
+            {% if bid == blank %}{% continue %}{% endif %}
+            {% if rendered_count >= max_items %}{% break %}{% endif %}
+
+            {% for block in section.blocks %}
+              {% assign stable_id = block.settings.custom_key | default: block.id %}
+              {% if stable_id == bid %}
+                {% render 'st4rt-testimonial-card', block: block %}
+                {% assign rendered_count = rendered_count | plus: 1 %}
+              {% endif %}
+            {% endfor %}
+          {% endfor %}
+
+          {% if rendered_count < max_items %}
+            {% for bid in nonmatches_arr %}
+              {% if bid == blank %}{% continue %}{% endif %}
+              {% if rendered_count >= max_items %}{% break %}{% endif %}
+
+              {% for block in section.blocks %}
+                {% assign stable_id = block.settings.custom_key | default: block.id %}
+                {% if stable_id == bid %}
+                  {% render 'st4rt-testimonial-card', block: block %}
+                  {% assign rendered_count = rendered_count | plus: 1 %}
+                {% endif %}
+              {% endfor %}
+            {% endfor %}
+          {% endif %}
+
+        {% else %}
+          {% for block in section.blocks %}
+            {% if rendered_count >= max_items %}{% break %}{% endif %}
+
+            {% liquid
+              assign bcat = block.settings.category | default: 'all'
+              assign bprod = block.settings.product
+              assign is_match = true
+
+              if wants_filter
+                if has_product_filter
+                  if bprod == blank or bprod.id != filter_product.id
+                    assign is_match = false
+                  endif
+                endif
+
+                if has_category_filter
+                  if bcat == blank or bcat != filter_category
+                    assign is_match = false
+                  endif
+                endif
+              endif
+            %}
+
+            {% if show_all %}
+              {% render 'st4rt-testimonial-card', block: block %}
+              {% assign rendered_count = rendered_count | plus: 1 %}
+            {% else %}
+              {% if is_match %}
+                {% render 'st4rt-testimonial-card', block: block %}
+                {% assign rendered_count = rendered_count | plus: 1 %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      </div>
+
+      <button class="st4rt-testimonials__nav st4rt-testimonials__nav--next" type="button" aria-label="siguiente">
+        <span aria-hidden="true">›</span>
+      </button>
+    </div>
+
+    <div class="st4rt-testimonials__dots" aria-label="paginación"></div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "St4rt Carrusel Review",
+  "settings": [
+    { "type": "text", "id": "kicker", "label": "kicker", "default": "lo que dicen nuestros clientes" },
+    { "type": "text", "id": "title", "label": "título", "default": "opiniones de clientes" },
+
+    { "type": "checkbox", "id": "full_width", "label": "ancho completo", "default": false },
+
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "label": "columnas desktop",
+      "options": [
+        { "value": "3", "label": "3" },
+        { "value": "5", "label": "5" }
+      ],
+      "default": "3"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "columnas mobile",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "1"
+    },
+
+    { "type": "range", "id": "max_items", "label": "máximo de cards", "min": 3, "max": 30, "step": 1, "default": 12 },
+
+    { "type": "range", "id": "card_height_desktop", "label": "alto card desktop", "min": 280, "max": 640, "step": 10, "default": 420 },
+    { "type": "range", "id": "card_height_mobile", "label": "alto card mobile", "min": 280, "max": 720, "step": 10, "default": 520 },
+
+    { "type": "range", "id": "text_lines_desktop", "label": "líneas de texto desktop", "min": 2, "max": 10, "step": 1, "default": 4 },
+    { "type": "range", "id": "text_lines_mobile", "label": "líneas de texto mobile", "min": 2, "max": 12, "step": 1, "default": 6 },
+
+    { "type": "range", "id": "gap_desktop", "label": "separación desktop", "min": 8, "max": 30, "step": 1, "default": 16 },
+    { "type": "range", "id": "gap_mobile", "label": "separación mobile", "min": 8, "max": 26, "step": 1, "default": 14 },
+
+    { "type": "range", "id": "padding_y", "label": "padding vertical sección", "min": 20, "max": 120, "step": 2, "default": 70 },
+
+    { "type": "checkbox", "id": "autoplay", "label": "autoplay", "default": false },
+    { "type": "range", "id": "autoplay_seconds", "label": "segundos autoplay", "min": 2, "max": 12, "step": 1, "default": 6 },
+
+    { "type": "header", "content": "filtros" },
+    { "type": "product", "id": "filter_product", "label": "filtrar por producto", "info": "opcional" },
+    {
+      "type": "select",
+      "id": "filter_category",
+      "label": "filtrar por categoría",
+      "options": [
+        { "value": "all", "label": "todas" },
+        { "value": "carro", "label": "carro" },
+        { "value": "moto", "label": "moto" },
+        { "value": "casco", "label": "casco" },
+        { "value": "detailing", "label": "detailing" }
+      ],
+      "default": "all"
+    },
+    {
+      "type": "select",
+      "id": "filter_mode",
+      "label": "modo de filtro",
+      "options": [
+        { "value": "show_all", "label": "mostrar todos" },
+        { "value": "only_matches", "label": "mostrar solo coincidencias" },
+        { "value": "prefer_matches", "label": "priorizar coincidencias y completar" }
+      ],
+      "default": "prefer_matches"
+    },
+
+    { "type": "header", "content": "colores desktop" },
+    { "type": "color", "id": "section_bg_desktop", "label": "fondo sección", "default": "#0b0d10" },
+    { "type": "color", "id": "card_bg_desktop", "label": "fondo card", "default": "#11151b" },
+    { "type": "color", "id": "kicker_color_desktop", "label": "color kicker", "default": "#78a7ff" },
+    { "type": "color", "id": "title_color_desktop", "label": "color título", "default": "#f2f2f2" },
+    { "type": "color", "id": "name_color_desktop", "label": "color nombre cliente", "default": "#f2f2f2" },
+    { "type": "color", "id": "text_color_desktop", "label": "color texto review", "default": "#cfd6dd" },
+    { "type": "color", "id": "tag_bg_desktop", "label": "fondo tag", "default": "#1f2a3a" },
+    { "type": "color", "id": "tag_color_desktop", "label": "color tag", "default": "#e4f2ae" },
+    { "type": "color", "id": "verified_color_desktop", "label": "color verificado", "default": "#cfd6dd" },
+    { "type": "color", "id": "card_shadow_color_desktop", "label": "sombra cards", "default": "rgba(0,0,0,0.55)" },
+
+    { "type": "header", "content": "colores mobile" },
+    { "type": "color", "id": "section_bg_mobile", "label": "fondo sección", "default": "#0b0d10" },
+    { "type": "color", "id": "card_bg_mobile", "label": "fondo card", "default": "#11151b" },
+    { "type": "color", "id": "kicker_color_mobile", "label": "color kicker", "default": "#78a7ff" },
+    { "type": "color", "id": "title_color_mobile", "label": "color título", "default": "#f2f2f2" },
+    { "type": "color", "id": "name_color_mobile", "label": "color nombre cliente", "default": "#f2f2f2" },
+    { "type": "color", "id": "text_color_mobile", "label": "color texto review", "default": "#cfd6dd" },
+    { "type": "color", "id": "tag_bg_mobile", "label": "fondo tag", "default": "#1f2a3a" },
+    { "type": "color", "id": "tag_color_mobile", "label": "color tag", "default": "#e4f2ae" },
+    { "type": "color", "id": "verified_color_mobile", "label": "color verificado", "default": "#cfd6dd" },
+    { "type": "color", "id": "card_shadow_color_mobile", "label": "sombra cards", "default": "rgba(0,0,0,0.55)" },
+
+    { "type": "header", "content": "estrellas y paginación" },
+    { "type": "color", "id": "stars_color", "label": "color estrellas", "default": "#f6c343" },
+    { "type": "color", "id": "dots_color", "label": "puntos paginación", "default": "rgba(255,255,255,0.35)" },
+    { "type": "color", "id": "dots_active_color", "label": "punto activo", "default": "#d8f213" },
+
+    { "type": "header", "content": "navegación flechas" },
+    { "type": "color", "id": "nav_bg", "label": "fondo flechas", "default": "rgba(0,0,0,0.35)" },
+    { "type": "color", "id": "nav_border", "label": "borde flechas", "default": "rgba(255,255,255,0.12)" },
+    { "type": "color", "id": "nav_color", "label": "color icono flechas", "default": "#ffffff" },
+
+    { "type": "header", "content": "card" },
+    { "type": "range", "id": "card_radius", "label": "radio card", "min": 8, "max": 28, "step": 1, "default": 18 }
+  ],
+  "blocks": [
+    {
+      "type": "testimonial",
+      "name": "testimonio",
+      "settings": [
+        {
+          "type": "text",
+          "id": "custom_key",
+          "label": "ID interno único",
+          "info": "Ej: t1, t2, cliente-01. Si duplicas un bloque, cambia este valor.",
+          "default": "t1"
+        },
+        { "type": "text", "id": "name", "label": "nombre", "default": "jorge m." },
+        { "type": "textarea", "id": "review", "label": "review", "default": "increíble producto, dejó mi carro brillando como nuevo. totalmente recomendado." },
+
+        { "type": "range", "id": "rating", "label": "rating", "min": 1, "max": 5, "step": 1, "default": 5 },
+
+        {
+          "type": "select",
+          "id": "media_mode",
+          "label": "avatar o imagen",
+          "options": [
+            { "value": "initials", "label": "solo iniciales" },
+            { "value": "image", "label": "imagen" }
+          ],
+          "default": "image"
+        },
+        { "type": "image_picker", "id": "image", "label": "imagen (opcional)" },
+
+        { "type": "text", "id": "tag", "label": "etiqueta", "default": "car care" },
+
+        { "type": "product", "id": "product", "label": "producto relacionado (opcional)" },
+
+        {
+          "type": "select",
+          "id": "category",
+          "label": "categoría",
+          "options": [
+            { "value": "all", "label": "todas" },
+            { "value": "carro", "label": "carro" },
+            { "value": "moto", "label": "moto" },
+            { "value": "casco", "label": "casco" },
+            { "value": "detailing", "label": "detailing" }
+          ],
+          "default": "all"
+        },
+
+        { "type": "checkbox", "id": "verified", "label": "cliente verificado", "default": true }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "st4rt testimonios carrusel",
+      "blocks": [
+        { "type": "testimonial" },
+        { "type": "testimonial" },
+        { "type": "testimonial" },
+        { "type": "testimonial" }
+      ]
+    }
+  ]
+}
+{% endschema %}

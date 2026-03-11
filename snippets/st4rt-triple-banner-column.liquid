@@ -1,0 +1,120 @@
+{%- if block == nil -%}
+  <div class="st4rt-tb__col st4rt-tb__col--{{ area }}" style="background: transparent;"></div>
+{%- else -%}
+  {%- assign has_kicker = false -%}
+{%- if block.settings.kicker != blank -%}{%- assign has_kicker = true -%}{%- endif -%}
+
+{%- assign has_title = false -%}
+{%- if block.settings.title != blank -%}{%- assign has_title = true -%}{%- endif -%}
+
+{%- assign has_subtitle = false -%}
+{%- if block.settings.subtitle != blank -%}
+  {%- unless block.settings.subtitle == '<p></p>' -%}
+    {%- assign has_subtitle = true -%}
+  {%- endunless -%}
+{%- endif -%}
+
+{%- assign has_btn = false -%}
+{%- if block.settings.button_text != blank -%}
+  {%- if block.settings.button_url != blank -%}
+    {%- assign has_btn = true -%}
+  {%- endif -%}
+{%- endif -%}
+
+{%- assign has_any_content = false -%}
+{%- if has_kicker -%}{%- assign has_any_content = true -%}{%- endif -%}
+{%- if has_title -%}{%- assign has_any_content = true -%}{%- endif -%}
+{%- if has_subtitle -%}{%- assign has_any_content = true -%}{%- endif -%}
+{%- if has_btn -%}{%- assign has_any_content = true -%}{%- endif -%}
+
+  <div
+    class="st4rt-tb__col st4rt-tb__col--{{ area }}{% if has_any_content %} has-content{% endif %}"
+    style="
+      --st4rt-tb-bg: {{ block.settings.bg_color }};
+      --st4rt-tb-pad-d: {{ block.settings.pad_d }}px;
+      --st4rt-tb-pad-m: {{ block.settings.pad_m }}px;
+      --st4rt-tb-kicker-c: {{ block.settings.kicker_color }};
+      --st4rt-tb-title-c: {{ block.settings.title_color }};
+      --st4rt-tb-subtitle-c: {{ block.settings.subtitle_color }};
+      --st4rt-tb-kicker-s: {{ block.settings.kicker_size }}px;
+      --st4rt-tb-title-s-d: {{ block.settings.title_size_d }}px;
+      --st4rt-tb-title-s-m: {{ block.settings.title_size_m }}px;
+      --st4rt-tb-subtitle-s: {{ block.settings.subtitle_size }}px;
+      --st4rt-tb-overlay-o: {{ block.settings.overlay_opacity | divided_by: 100.0 }};
+    "
+    data-halign="{{ block.settings.halign }}"
+    data-valign="{{ block.settings.valign }}"
+    {{ block.shopify_attributes }}
+  >
+    <div class="st4rt-tb__bg">
+      {%- if block.settings.bg_image_desktop != blank or block.settings.bg_image_mobile != blank -%}
+        {%- assign desktop_img = block.settings.bg_image_desktop | default: block.settings.bg_image_mobile -%}
+        {%- assign mobile_img = block.settings.bg_image_mobile | default: desktop_img -%}
+
+        <picture>
+          {%- if mobile_img != blank -%}
+            <source
+              media="(max-width: 767px)"
+              srcset="
+                {{ mobile_img | image_url: width: 480 }} 480w,
+                {{ mobile_img | image_url: width: 720 }} 720w,
+                {{ mobile_img | image_url: width: 960 }} 960w,
+                {{ mobile_img | image_url: width: 1200 }} 1200w
+              "
+              sizes="100vw"
+            >
+          {%- endif -%}
+
+          <source
+            media="(min-width: 768px)"
+            srcset="
+              {{ desktop_img | image_url: width: 640 }} 640w,
+              {{ desktop_img | image_url: width: 960 }} 960w,
+              {{ desktop_img | image_url: width: 1200 }} 1200w,
+              {{ desktop_img | image_url: width: 1600 }} 1600w,
+              {{ desktop_img | image_url: width: 2000 }} 2000w
+            "
+            sizes="33.33vw"
+          >
+
+          <img
+            class="st4rt-tb__bgimg"
+            src="{{ desktop_img | image_url: width: 1200 }}"
+            width="{{ desktop_img.width }}"
+            height="{{ desktop_img.height }}"
+            loading="lazy"
+            alt=""
+          >
+        </picture>
+      {%- else -%}
+        <div class="st4rt-tb__bgsolid" aria-hidden="true"></div>
+      {%- endif -%}
+
+      {%- if block.settings.overlay_enable -%}
+        <div class="st4rt-tb__overlay" aria-hidden="true"></div>
+      {%- endif -%}
+    </div>
+
+    {%- if has_any_content -%}
+      <div class="st4rt-tb__content">
+        {%- if has_kicker -%}
+          <div class="st4rt-tb__kicker">{{ block.settings.kicker }}</div>
+        {%- endif -%}
+
+        {%- if has_title -%}
+          <h2 class="st4rt-tb__title">{{ block.settings.title }}</h2>
+        {%- endif -%}
+
+        {%- if has_subtitle -%}
+          <div class="st4rt-tb__subtitle">{{ block.settings.subtitle }}</div>
+        {%- endif -%}
+
+        {%- if has_btn -%}
+          <div class="st4rt-tb__btnwrap">
+            <a class="st4rt-btn" href="{{ block.settings.button_url }}">{{ block.settings.button_text }}</a>
+          </div>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+  </div>
+{%- endif -%}

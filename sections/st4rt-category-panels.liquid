@@ -1,0 +1,442 @@
+{%- comment -%}
+  ST4RT Category Panels (v2)
+  - Sin frame: solo imagen con radio controlable
+  - Columnas con color independiente o color unificado (toggle)
+  - Tipografía y colores recuperados (kicker/título/texto)
+  - Watermark configurable (texto/imagen) + posición y opción auto opuesta al botón
+  - Imagen centrada en mobile
+  - Art direction: imagen desktop + imagen mobile (picture)
+  - Reveal por elemento (kicker/title/text/button/image) con control global de duración y stagger
+  - Hover effect: zoom o swap (intercambio de imagen)
+{%- endcomment -%}
+
+{{ 'st4rt-category-panels.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'st4rt-category-panels.js' | asset_url }}" defer></script>
+
+{%- assign panels = section.blocks | where: "type", "panel" -%}
+{%- if panels.size > 0 -%}
+<section
+  id="st4rt-catpanels-{{ section.id }}"
+  class="st4rt-catpanels{% if section.settings.full_width %} is-full{% endif %}{% if section.settings.bg_fx %} has-bgfx{% endif %}"
+  data-st4rt-catpanels
+  data-wait-scroll="{{ section.settings.wait_for_scroll }}"
+  style="
+    --st4rt-section-bg: {{ section.settings.section_bg }};
+    --st4rt-section-tx: {{ section.settings.section_text }};
+    --st4rt-panel-gap: {{ section.settings.panel_gap }}px;
+    --st4rt-panel-radius: {{ section.settings.panel_radius }}px;
+
+    --st4rt-content-pad-d: {{ section.settings.content_padding_desktop }}px;
+    --st4rt-content-pad-m: {{ section.settings.content_padding_mobile }}px;
+
+    --st4rt-kicker-size: {{ section.settings.kicker_size }}px;
+    --st4rt-title-size-d: {{ section.settings.title_size_desktop }}px;
+    --st4rt-title-size-m: {{ section.settings.title_size_mobile }}px;
+    --st4rt-body-size: {{ section.settings.body_size }}px;
+
+    --st4rt-kicker-color: {{ section.settings.kicker_color }};
+    --st4rt-title-color: {{ section.settings.title_color }};
+    --st4rt-body-color: {{ section.settings.body_color }};
+
+    --st4rt-reveal-duration: {{ section.settings.reveal_duration }}ms;
+    --st4rt-reveal-stagger: {{ section.settings.reveal_stagger }}ms;
+
+    --st4rt-btn-bg: {{ section.settings.button_bg_color }};
+    --st4rt-btn-tx: {{ section.settings.button_text_color }};
+    --st4rt-btn-bd: {{ section.settings.button_border_color }};
+    --st4rt-btn-bg-h: {{ section.settings.button_bg_hover }};
+    --st4rt-btn-tx-h: {{ section.settings.button_text_hover }};
+    --st4rt-btn-bd-h: {{ section.settings.button_border_hover }};
+    --st4rt-btn-fs-d: {{ section.settings.button_font_size_desktop }}px;
+    --st4rt-btn-fs-m: {{ section.settings.button_font_size_mobile }}px;
+    --st4rt-btn-fw: {{ section.settings.button_font_weight }};
+    --st4rt-btn-bw: {{ section.settings.button_border_width }}px;
+    --st4rt-btn-r: {{ section.settings.button_radius }}px;
+    --st4rt-btn-px: {{ section.settings.button_padding_x }}px;
+    --st4rt-btn-py: {{ section.settings.button_padding_y }}px;
+    --st4rt-btn-ls: {{ section.settings.button_letter_spacing }}px;
+    --st4rt-btn-transform: {{ section.settings.button_transform }};
+
+    --st4rt-fx-opacity: {{ section.settings.bg_fx_opacity | divided_by: 100.0 }};
+
+    --st4rt-img-radius: {{ section.settings.image_radius }}px;
+    --st4rt-img-zoom-scale: {{ section.settings.image_hover_zoom_scale | divided_by: 100.0 }};
+    --st4rt-img-zoom-speed: {{ section.settings.image_hover_zoom_speed }}ms;
+    --st4rt-img-swap-speed: {{ section.settings.image_swap_speed }}ms;
+  "
+>
+  <div class="st4rt-catpanels__wrap">
+
+    {%- for block in panels -%}
+      {%- assign reverse = block.settings.reverse_layout -%}
+
+      {%- assign has_btn = false -%}
+      {%- if block.settings.button_text != blank and block.settings.button_url != blank -%}
+        {%- assign has_btn = true -%}
+      {%- endif -%}
+
+      {%- assign has_link = false -%}
+      {%- if block.settings.image_link != blank -%}
+        {%- assign has_link = true -%}
+      {%- endif -%}
+
+      {%- assign img_desktop = block.settings.image_desktop -%}
+      {%- assign img_mobile = block.settings.image_mobile -%}
+
+      {%- assign loading_mode = 'lazy' -%}
+      {%- assign fetchpriority_mode = '' -%}
+      {%- if forloop.first and section.settings.first_panel_eager -%}
+        {%- assign loading_mode = 'eager' -%}
+        {%- assign fetchpriority_mode = 'high' -%}
+      {%- endif -%}
+
+      {%- comment -%} Colores por columna: unificado o independiente {%- endcomment -%}
+      {%- assign use_split_bg = block.settings.use_split_bg -%}
+      {%- assign content_bg = block.settings.panel_bg -%}
+      {%- assign media_bg = block.settings.media_bg -%}
+      {%- if use_split_bg == false -%}
+        {%- assign media_bg = block.settings.panel_bg -%}
+      {%- endif -%}
+
+      {%- comment -%} Colores de texto por bloque (si están vacíos, caen a sección) {%- endcomment -%}
+      {%- assign kicker_c = block.settings.kicker_color | default: section.settings.kicker_color -%}
+      {%- assign title_c  = block.settings.title_color  | default: section.settings.title_color -%}
+      {%- assign body_c   = block.settings.body_color   | default: section.settings.body_color -%}
+
+      {%- assign force_mobile_image_first = false -%}
+      {%- if forloop.first and section.settings.first_panel_eager -%}
+        {%- assign force_mobile_image_first = true -%}
+      {%- endif -%}
+
+      <article
+        class="st4rt-catpanel{% if reverse %} is-reverse{% endif %}{% if block.settings.mobile_order == 'image_first' or force_mobile_image_first %} is-mobile-image-first{% endif %}"
+        data-st4rt-panel
+        style="
+          --st4rt-content-bg: {{ content_bg }};
+          --st4rt-media-bg: {{ media_bg }};
+          --st4rt-panel-tx: {{ block.settings.panel_text }};
+          --st4rt-kicker-color-b: {{ kicker_c }};
+          --st4rt-title-color-b: {{ title_c }};
+          --st4rt-body-color-b: {{ body_c }};
+          --st4rt-watermark-opacity: {{ block.settings.watermark_opacity | divided_by: 100.0 }};
+        "
+        data-watermark-opposite="{{ block.settings.watermark_opposite_button }}"
+        data-button-align="{{ block.settings.button_align }}"
+        {{ block.shopify_attributes }}
+      >
+
+        <!-- content -->
+        <div
+          class="st4rt-catpanel__content"
+          data-halign="{{ block.settings.content_align_h }}"
+          data-valign="{{ block.settings.content_align_v }}"
+        >
+          {%- if block.settings.kicker != blank -%}
+            <div class="st4rt-catpanel__kicker st4rt-reveal-item" data-anim="kicker">{{ block.settings.kicker }}</div>
+          {%- endif -%}
+
+          {%- if block.settings.title != blank -%}
+            <h2 class="st4rt-catpanel__title st4rt-reveal-item" data-anim="title">{{ block.settings.title }}</h2>
+          {%- endif -%}
+
+          {%- if block.settings.text != blank -%}
+            <div class="st4rt-catpanel__text st4rt-reveal-item" data-anim="text">{{ block.settings.text }}</div>
+          {%- endif -%}
+
+          {%- if has_btn -%}
+            <div class="st4rt-catpanel__btnwrap st4rt-reveal-item" data-anim="button" data-align="{{ block.settings.button_align }}">
+              <a class="st4rt-btn" href="{{ block.settings.button_url }}">{{ block.settings.button_text }}</a>
+            </div>
+          {%- endif -%}
+
+          {%- comment -%} Watermark {%- endcomment -%}
+          {%- if block.settings.watermark_type != 'none' -%}
+            <div
+              class="st4rt-catpanel__watermark"
+              data-wm-pos="{{ block.settings.watermark_position }}"
+              aria-hidden="true"
+            >
+              {%- if block.settings.watermark_type == 'text' and block.settings.watermark_text != blank -%}
+                <div class="st4rt-wm-text{% if block.settings.watermark_outline %} is-outline{% endif %}"
+                  style="
+                    --st4rt-wm-size: {{ block.settings.watermark_text_size }}px;
+                    --st4rt-wm-weight: {{ block.settings.watermark_text_weight }};
+                    --st4rt-wm-color: {{ block.settings.watermark_text_color }};
+                    --st4rt-wm-stroke: {{ block.settings.watermark_stroke_width }}px;
+                    --st4rt-wm-stroke-color: {{ block.settings.watermark_stroke_color }};
+                  "
+                >
+                  {{ block.settings.watermark_text }}
+                </div>
+              {%- elsif block.settings.watermark_type == 'image' and block.settings.watermark_image != blank -%}
+                {{
+                  block.settings.watermark_image
+                  | image_url: width: 800
+                  | image_tag:
+                    loading: 'lazy',
+                    widths: "200,320,480,640,800",
+                    sizes: "220px",
+                    alt: "watermark",
+                    class: 'st4rt-wm-img'
+                }}
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        </div>
+
+        <!-- media -->
+        <div class="st4rt-catpanel__media st4rt-reveal-item" data-anim="image">
+          {%- if img_desktop != blank -%}
+
+            {%- if has_link -%}
+              <a class="st4rt-catpanel__mediaLink" href="{{ block.settings.image_link }}" aria-label="{{ block.settings.title | escape }}">
+            {%- else -%}
+              <div class="st4rt-catpanel__mediaLink" aria-hidden="true">
+            {%- endif -%}
+
+              <div class="st4rt-catpanel__mediaInner
+                {% if section.settings.hover_effect == 'zoom' and section.settings.image_hover_zoom %} is-zoom{% endif %}
+                {% if section.settings.hover_effect == 'swap' %} is-swap{% endif %}
+              ">
+                <picture>
+                  {%- if img_mobile != blank -%}
+                    <source
+                      media="(max-width: 899px)"
+                      srcset="
+                        {{ img_mobile | image_url: width: 480 }} 480w,
+                        {{ img_mobile | image_url: width: 640 }} 640w,
+                        {{ img_mobile | image_url: width: 800 }} 800w,
+                        {{ img_mobile | image_url: width: 1000 }} 1000w,
+                        {{ img_mobile | image_url: width: 1200 }} 1200w
+                      "
+                      sizes="92vw"
+                    >
+                  {%- endif -%}
+
+                  <img
+                    class="st4rt-catpanel__img st4rt-catpanel__img--primary"
+                    src="{{ img_desktop | image_url: width: 1000 }}"
+                    srcset="
+                      {{ img_desktop | image_url: width: 640 }} 640w,
+                      {{ img_desktop | image_url: width: 800 }} 800w,
+                      {{ img_desktop | image_url: width: 1000 }} 1000w,
+                      {{ img_desktop | image_url: width: 1200 }} 1200w,
+                      {{ img_desktop | image_url: width: 1600 }} 1600w,
+                      {{ img_desktop | image_url: width: 2000 }} 2000w
+                    "
+                    sizes="(max-width: 899px) 92vw, 46vw"
+                    loading="{{ loading_mode }}"
+                    {% if fetchpriority_mode != blank %}fetchpriority="{{ fetchpriority_mode }}"{% endif %}
+                    width="{{ img_desktop.width }}"
+                    height="{{ img_desktop.height }}"
+                    alt="{{ block.settings.image_alt | default: block.settings.title | escape }}"
+                  >
+                </picture>
+
+                {%- if section.settings.hover_effect == 'swap' and block.settings.hover_image != blank -%}
+                  {{
+                    block.settings.hover_image
+                    | image_url: width: 2000
+                    | image_tag:
+                      loading: 'lazy',
+                      widths: "480,640,800,1000,1200,1600,2000",
+                      sizes: "(max-width: 899px) 92vw, 46vw",
+                      alt: block.settings.hover_image_alt | default: block.settings.image_alt | default: block.settings.title,
+                      class: 'st4rt-catpanel__img st4rt-catpanel__img--hover'
+                  }}
+                {%- endif -%}
+              </div>
+
+            {%- if has_link -%}
+              </a>
+            {%- else -%}
+              </div>
+            {%- endif -%}
+
+          {%- endif -%}
+        </div>
+      </article>
+
+    {%- endfor -%}
+
+  </div>
+</section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "St4rt Category Panels",
+  "tag": "section",
+  "class": "st4rt-category-panels",
+  "settings": [
+    { "type": "header", "content": "layout" },
+    { "type": "checkbox", "id": "full_width", "label": "ancho completo", "default": true },
+    { "type": "range", "id": "panel_gap", "min": 8, "max": 48, "step": 2, "unit": "px", "label": "separación entre paneles", "default": 18 },
+    { "type": "range", "id": "panel_radius", "min": 0, "max": 40, "step": 1, "unit": "px", "label": "radio de esquinas del contenedor", "default": 10 },
+
+    { "type": "range", "id": "content_padding_desktop", "min": 16, "max": 100, "step": 2, "unit": "px", "label": "padding contenido desktop", "default": 56 },
+    { "type": "range", "id": "content_padding_mobile", "min": 14, "max": 60, "step": 2, "unit": "px", "label": "padding contenido mobile", "default": 22 },
+
+    { "type": "header", "content": "reveal" },
+    { "type": "range", "id": "reveal_duration", "min": 150, "max": 1500, "step": 50, "unit": "ms", "label": "duración animación (ms)", "default": 700 },
+    { "type": "range", "id": "reveal_stagger", "min": 0, "max": 400, "step": 20, "unit": "ms", "label": "stagger entre elementos (ms)", "default": 80 },
+    { "type": "checkbox", "id": "wait_for_scroll", "label": "esperar primer scroll antes de animar", "default": true },
+    { "type": "checkbox", "id": "first_panel_eager", "label": "primer panel con imagen eager (si queda arriba)", "default": false },
+
+    { "type": "header", "content": "hover sobre imagen" },
+    {
+      "type": "select",
+      "id": "hover_effect",
+      "label": "tipo de efecto",
+      "default": "zoom",
+      "options": [
+        { "value": "zoom", "label": "zoom" },
+        { "value": "swap", "label": "intercambio de imagen" }
+      ]
+    },
+    { "type": "checkbox", "id": "image_hover_zoom", "label": "activar zoom en hover", "default": true },
+    { "type": "range", "id": "image_hover_zoom_scale", "min": 101, "max": 130, "step": 1, "unit": "%", "label": "zoom en hover", "default": 108 },
+    { "type": "range", "id": "image_hover_zoom_speed", "min": 120, "max": 2000, "step": 20, "unit": "ms", "label": "duración zoom (ms)", "default": 360 },
+    { "type": "range", "id": "image_swap_speed", "min": 120, "max": 1200, "step": 20, "unit": "ms", "label": "duración intercambio (ms)", "default": 300 },
+
+    { "type": "header", "content": "imagen" },
+    { "type": "range", "id": "image_radius", "min": 0, "max": 40, "step": 1, "unit": "px", "label": "radio de bordes de la imagen", "default": 12 },
+
+    { "type": "header", "content": "colores base de sección" },
+    { "type": "color", "id": "section_bg", "label": "fondo sección", "default": "#0B0D10" },
+    { "type": "color", "id": "section_text", "label": "texto base sección", "default": "#F2F2F2" },
+
+    { "type": "header", "content": "tipografía" },
+    { "type": "range", "id": "kicker_size", "min": 10, "max": 20, "step": 1, "unit": "px", "label": "kicker tamaño", "default": 12 },
+    { "type": "range", "id": "title_size_desktop", "min": 26, "max": 88, "step": 1, "unit": "px", "label": "título tamaño desktop", "default": 64 },
+    { "type": "range", "id": "title_size_mobile", "min": 22, "max": 56, "step": 1, "unit": "px", "label": "título tamaño mobile", "default": 42 },
+    { "type": "range", "id": "body_size", "min": 12, "max": 22, "step": 1, "unit": "px", "label": "texto tamaño", "default": 18 },
+
+    { "type": "color", "id": "kicker_color", "label": "color kicker", "default": "#F2F2F2" },
+    { "type": "color", "id": "title_color", "label": "color título", "default": "#F2F2F2" },
+    { "type": "color", "id": "body_color", "label": "color texto", "default": "#F2F2F2" },
+
+    { "type": "header", "content": "botón estilo hero" },
+    { "type": "color", "id": "button_bg_color", "label": "fondo", "default": "rgba(0,0,0,0)" },
+    { "type": "color", "id": "button_text_color", "label": "texto", "default": "#F2F2F2" },
+    { "type": "color", "id": "button_border_color", "label": "borde", "default": "#F2F2F2" },
+    { "type": "color", "id": "button_bg_hover", "label": "fondo hover", "default": "#D8F213" },
+    { "type": "color", "id": "button_text_hover", "label": "texto hover", "default": "#0B0D10" },
+    { "type": "color", "id": "button_border_hover", "label": "borde hover", "default": "#D8F213" },
+    { "type": "range", "id": "button_font_size_desktop", "min": 10, "max": 28, "step": 1, "unit": "px", "label": "tamaño desktop", "default": 16 },
+    { "type": "range", "id": "button_font_size_mobile", "min": 10, "max": 24, "step": 1, "unit": "px", "label": "tamaño mobile", "default": 15 },
+    { "type": "range", "id": "button_font_weight", "min": 100, "max": 900, "step": 100, "label": "peso", "default": 700 },
+    { "type": "range", "id": "button_border_width", "min": 0, "max": 6, "step": 1, "unit": "px", "label": "borde", "default": 2 },
+    { "type": "range", "id": "button_radius", "min": 0, "max": 40, "step": 1, "unit": "px", "label": "radio", "default": 0 },
+    { "type": "range", "id": "button_padding_x", "min": 8, "max": 44, "step": 1, "unit": "px", "label": "padding x", "default": 22 },
+    { "type": "range", "id": "button_padding_y", "min": 6, "max": 30, "step": 1, "unit": "px", "label": "padding y", "default": 12 },
+    { "type": "range", "id": "button_letter_spacing", "min": -2, "max": 8, "step": 1, "unit": "px", "label": "letter spacing", "default": 2 },
+    {
+      "type": "select",
+      "id": "button_transform",
+      "label": "transform",
+      "default": "uppercase",
+      "options": [
+        { "value": "none", "label": "normal" },
+        { "value": "uppercase", "label": "mayúsculas" }
+      ]
+    },
+
+    { "type": "header", "content": "fondo animado (css ligero)" },
+    { "type": "checkbox", "id": "bg_fx", "label": "activar efecto de fondo", "default": true },
+    { "type": "range", "id": "bg_fx_opacity", "min": 0, "max": 40, "step": 1, "unit": "%", "label": "intensidad del efecto", "default": 10 }
+  ],
+  "blocks": [
+    {
+      "type": "panel",
+      "name": "Panel",
+      "settings": [
+        { "type": "checkbox", "id": "reverse_layout", "label": "imagen a la izquierda (invertir layout)", "default": false },
+
+        { "type": "select", "id": "mobile_order", "label": "orden en mobile", "default": "text_first", "options": [
+          { "value": "text_first", "label": "texto arriba" },
+          { "value": "image_first", "label": "imagen arriba" }
+        ]},
+
+        { "type": "header", "content": "colores" },
+        { "type": "checkbox", "id": "use_split_bg", "label": "usar color diferente en columna de imagen", "default": true },
+        { "type": "color", "id": "panel_bg", "label": "fondo panel (columna texto)", "default": "#3A3A3A" },
+        { "type": "color", "id": "media_bg", "label": "fondo columna imagen", "default": "#122B55" },
+        { "type": "color", "id": "panel_text", "label": "texto base del panel", "default": "#F2F2F2" },
+
+        { "type": "header", "content": "texto" },
+        { "type": "text", "id": "kicker", "label": "kicker", "default": "conoce nuestra línea especializada en motos" },
+        { "type": "text", "id": "title", "label": "título", "default": "para moteros de verdad" },
+        { "type": "richtext", "id": "text", "label": "texto", "default": "<p>Nuestra Línea Moto St4rt está diseñada para quienes quieren vivir la verdadera experiencia de ir en dos ruedas</p>" },
+
+        { "type": "header", "content": "colores de texto (por panel)" },
+        { "type": "color", "id": "kicker_color", "label": "color kicker (panel)", "default": "#F2F2F2" },
+        { "type": "color", "id": "title_color", "label": "color título (panel)", "default": "#F2F2F2" },
+        { "type": "color", "id": "body_color", "label": "color texto (panel)", "default": "#F2F2F2" },
+
+        { "type": "header", "content": "alineación" },
+        { "type": "select", "id": "content_align_h", "label": "horizontal", "default": "left", "options": [
+          { "value": "left", "label": "izquierda" },
+          { "value": "center", "label": "centro" },
+          { "value": "right", "label": "derecha" }
+        ]},
+        { "type": "select", "id": "content_align_v", "label": "vertical", "default": "center", "options": [
+          { "value": "top", "label": "arriba" },
+          { "value": "center", "label": "centro" },
+          { "value": "bottom", "label": "abajo" }
+        ]},
+
+        { "type": "header", "content": "botón" },
+        { "type": "text", "id": "button_text", "label": "texto del botón", "default": "conoce toda la línea" },
+        { "type": "url", "id": "button_url", "label": "url del botón" },
+        { "type": "select", "id": "button_align", "label": "alineación del botón", "default": "left", "options": [
+          { "value": "left", "label": "izquierda" },
+          { "value": "center", "label": "centro" },
+          { "value": "right", "label": "derecha" }
+        ]},
+
+        { "type": "header", "content": "imagen (art direction)" },
+        { "type": "paragraph", "content": "recomendado desktop 1200x1500 (4:5) o 1350x1800 (3:4). recomendado mobile 1080x1080 (1:1) o 1080x1350 (4:5)." },
+        { "type": "image_picker", "id": "image_desktop", "label": "imagen desktop" },
+        { "type": "image_picker", "id": "image_mobile", "label": "imagen mobile (opcional)" },
+        { "type": "text", "id": "image_alt", "label": "alt (se usa para ambas)", "default": "Imagen del producto" },
+        { "type": "url", "id": "image_link", "label": "link al tocar imagen (opcional)" },
+
+        { "type": "header", "content": "hover (si usas intercambio)" },
+        { "type": "image_picker", "id": "hover_image", "label": "imagen hover (swap)" },
+        { "type": "text", "id": "hover_image_alt", "label": "alt imagen hover", "default": "Imagen del producto (hover)" },
+
+        { "type": "header", "content": "watermark" },
+        { "type": "select", "id": "watermark_type", "label": "tipo", "default": "none", "options": [
+          { "value": "none", "label": "ninguno" },
+          { "value": "text", "label": "texto" },
+          { "value": "image", "label": "imagen" }
+        ]},
+        { "type": "text", "id": "watermark_text", "label": "watermark texto", "default": "ST4RT" },
+        { "type": "image_picker", "id": "watermark_image", "label": "watermark imagen" },
+        { "type": "range", "id": "watermark_opacity", "min": 0, "max": 30, "step": 1, "unit": "%", "label": "opacidad", "default": 8 },
+
+        { "type": "select", "id": "watermark_position", "label": "posición", "default": "br", "options": [
+          { "value": "tl", "label": "arriba izquierda" },
+          { "value": "tr", "label": "arriba derecha" },
+          { "value": "bl", "label": "abajo izquierda" },
+          { "value": "br", "label": "abajo derecha" },
+          { "value": "c",  "label": "centro" }
+        ]},
+        { "type": "checkbox", "id": "watermark_opposite_button", "label": "posición automática opuesta al botón", "default": true },
+
+        { "type": "header", "content": "watermark texto estilo" },
+        { "type": "range", "id": "watermark_text_size", "min": 14, "max": 120, "step": 2, "unit": "px", "label": "tamaño", "default": 42 },
+        { "type": "range", "id": "watermark_text_weight", "min": 100, "max": 900, "step": 100, "label": "peso", "default": 800 },
+        { "type": "color", "id": "watermark_text_color", "label": "color", "default": "rgba(255,255,255,0.22)" },
+        { "type": "checkbox", "id": "watermark_outline", "label": "outline", "default": false },
+        { "type": "range", "id": "watermark_stroke_width", "min": 1, "max": 6, "step": 1, "unit": "px", "label": "grosor outline", "default": 2 },
+        { "type": "color", "id": "watermark_stroke_color", "label": "color outline", "default": "rgba(255,255,255,0.35)" }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "St4rt Category Panels", "category": "St4rt" }
+  ]
+}
+{% endschema %}

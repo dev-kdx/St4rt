@@ -1,0 +1,62 @@
+{% comment %}
+  File: snippets/st4rt-testimonial-card.liquid
+  Input: block
+{% endcomment %}
+
+{% liquid
+  assign b = block
+  assign name = b.settings.name
+  assign review = b.settings.review
+  assign rating = b.settings.rating | default: 5
+  assign tag = b.settings.tag
+  assign verified = b.settings.verified
+  assign media_mode = b.settings.media_mode | default: 'image'
+  assign img = b.settings.image
+%}
+
+<article class="st4rt-tcard" {{ b.shopify_attributes }}>
+  <div class="st4rt-tcard__stars" aria-label="rating {{ rating }} de 5">
+    {% for i in (1..5) %}
+      {% if i <= rating %}
+        <span aria-hidden="true">★</span>
+      {% else %}
+        <span aria-hidden="true" style="opacity:.25">★</span>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <div class="st4rt-tcard__media">
+    {% if media_mode == 'image' and img != blank %}
+      {{ img | image_url: width: 900 | image_tag: loading: 'lazy', widths: '240,360,480,600,720,900', alt: name }}
+    {% else %}
+      {% assign words = name | strip | split: ' ' %}
+      {% assign first = words[0] | slice: 0, 1 | upcase %}
+      {% assign second = words[1] | slice: 0, 1 | upcase %}
+      <div class="st4rt-tcard__initials" aria-hidden="true">{{ first }}{{ second }}</div>
+    {% endif %}
+  </div>
+
+  <div class="st4rt-tcard__body">
+    {% if name != blank %}
+      <h3 class="st4rt-tcard__name">{{ name | escape }}</h3>
+    {% endif %}
+
+    {% if review != blank %}
+      <p class="st4rt-tcard__text">{{ review | escape }}</p>
+    {% endif %}
+
+    <div class="st4rt-tcard__meta">
+      {% if tag != blank %}
+        <div class="st4rt-tcard__tag">{{ tag | escape }}</div>
+      {% else %}
+        <div></div>
+      {% endif %}
+
+      {% if verified %}
+        <div class="st4rt-tcard__verified">cliente verificado</div>
+      {% else %}
+        <div class="st4rt-tcard__verified is-empty">cliente verificado</div>
+      {% endif %}
+    </div>
+  </div>
+</article>

@@ -1,0 +1,748 @@
+{% comment %}
+  File: sections/st4rt-carrusel-productos.liquid
+  Assets:
+    - assets/st4rt-carrusel-productos.css
+    - assets/st4rt-carrusel-productos.js
+
+  Cambio principal:
+  - Se eliminó el modal y todo lo relacionado a él.
+  - El CTA ahora navega a una URL configurable por slide (fallback a product.url).
+{% endcomment %}
+
+{{ 'st4rt-carrusel-productos.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'st4rt-carrusel-productos.js' | asset_url }}" defer></script>
+
+{% liquid
+  assign sid = section.id
+  assign full_width = section.settings.full_width
+%}
+
+{% if section.settings.title_font != blank or section.settings.body_font != blank %}
+  <style>
+    {% if section.settings.title_font != blank %}
+      {{ section.settings.title_font | font_face: font_display: 'swap' }}
+    {% endif %}
+    {% if section.settings.body_font != blank %}
+      {{ section.settings.body_font | font_face: font_display: 'swap' }}
+    {% endif %}
+  </style>
+{% endif %}
+
+<section
+  id="st4rt-hero-{{ sid }}"
+  class="st4rt-hero {% if full_width %}is-fullwidth{% endif %}"
+  data-st4rt-hero
+  data-section-id="{{ sid }}"
+  data-autoplay="{{ section.settings.autoplay }}"
+  data-autoplay-seconds="{{ section.settings.autoplay_seconds }}"
+  data-loop="{{ section.settings.loop_slides }}"
+  data-dots="{{ section.settings.show_dots }}"
+  data-arrows="{{ section.settings.show_arrows }}"
+  data-reduced-motion="{{ section.settings.reduce_motion }}"
+  style="
+    --st4rt-hero-bg: {{ section.settings.section_bg }};
+    --st4rt-hero-overlay-c: {{ section.settings.overlay_color }};
+    --st4rt-hero-overlay-o: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+    --st4rt-hero-h-d: {{ section.settings.height_desktop }}px;
+    --st4rt-hero-h-m: {{ section.settings.height_mobile }}px;
+
+    --st4rt-hero-py-d: {{ section.settings.padding_y_desktop }}px;
+    --st4rt-hero-py-m: {{ section.settings.padding_y_mobile }}px;
+
+    --st4rt-hero-gap-d: {{ section.settings.gap_desktop }}px;
+    --st4rt-hero-gap-m: {{ section.settings.gap_mobile }}px;
+
+    --st4rt-hero-radius: {{ section.settings.radius }}px;
+
+    --st4rt-kicker-c: {{ section.settings.kicker_color }};
+    --st4rt-title-c: {{ section.settings.title_color }};
+    --st4rt-text-c: {{ section.settings.text_color }};
+
+    --st4rt-text-ml-d: {{ section.settings.text_margin_left_desktop }}px;
+    --st4rt-text-ml-m: {{ section.settings.text_margin_left_mobile }}px;
+
+    --st4rt-title-size-d: {{ section.settings.title_size_desktop }}px;
+    --st4rt-title-size-m: {{ section.settings.title_size_mobile }}px;
+    --st4rt-text-size-d: {{ section.settings.text_size_desktop }}px;
+    --st4rt-text-size-m: {{ section.settings.text_size_mobile }}px;
+
+    --st4rt-text-offset-x-d: {{ section.settings.text_offset_x_desktop }}px;
+    --st4rt-text-offset-x-m: {{ section.settings.text_offset_x_mobile }}px;
+
+    --st4rt-body-font: {% if section.settings.body_font != blank %}{{ section.settings.body_font.family }}, {{ section.settings.body_font.fallback_families }}{% else %}inherit{% endif %};
+    --st4rt-title-font: {% if section.settings.title_font != blank %}{{ section.settings.title_font.family }}, {{ section.settings.title_font.fallback_families }}{% else %}inherit{% endif %};
+
+    --st4rt-btn-bg: {{ section.settings.btn_bg }};
+    --st4rt-btn-c: {{ section.settings.btn_color }};
+    --st4rt-btn-bd: {{ section.settings.btn_border_color }};
+    --st4rt-btn-bdw: {{ section.settings.btn_border_width }}px;
+    --st4rt-btn-r: {{ section.settings.btn_radius }}px;
+
+    --st4rt-btn-bg-h: {{ section.settings.btn_bg_hover }};
+    --st4rt-btn-c-h: {{ section.settings.btn_color_hover }};
+    --st4rt-btn-bd-h: {{ section.settings.btn_border_color_hover }};
+
+    --st4rt-btn-font-s-d: {{ section.settings.btn_font_size_desktop }}px;
+    --st4rt-btn-font-s-m: {{ section.settings.btn_font_size_mobile }}px;
+    --st4rt-btn-fw: {{ section.settings.btn_font_weight }};
+    --st4rt-btn-transform: {{ section.settings.btn_text_transform }};
+
+    --st4rt-btn-h-d: {{ section.settings.btn_height_desktop }}px;
+    --st4rt-btn-h-m: {{ section.settings.btn_height_mobile }}px;
+    --st4rt-btn-minw-d: {{ section.settings.btn_min_width_desktop }}px;
+
+    --st4rt-dot-c: {{ section.settings.dot_color }};
+    --st4rt-dot-active-c: {{ section.settings.dot_active_color }};
+  "
+>
+  <div class="st4rt-hero__wrap {% unless full_width %}page-width{% endunless %}">
+    <div class="st4rt-hero__viewport">
+      <div
+        id="st4rt-hero-track-{{ sid }}"
+        class="st4rt-hero__track"
+        role="region"
+        aria-label="Carrusel de productos destacados"
+      >
+        {% for block in section.blocks %}
+          {% liquid
+            assign b = block
+            assign bg = b.settings.bg_image
+            assign bgfx = b.settings.bgfx_image
+
+            assign pack_d = b.settings.pack_image_desktop
+            assign pack_m = b.settings.pack_image_mobile
+
+            assign product = b.settings.product
+
+            assign cta_label = b.settings.cta_label
+            if cta_label == blank
+              assign cta_label = section.settings.default_cta_label
+            endif
+
+            assign cta_url = b.settings.cta_url
+            if cta_url == blank and product != blank
+              assign cta_url = product.url
+            endif
+          %}
+
+          <article
+            class="st4rt-hero__slide"
+            data-slide
+            aria-label="Slide {{ forloop.index }} de {{ section.blocks.size }}"
+            {% if product != blank %}
+              data-product-url="{{ product.url | escape }}"
+            {% endif %}
+            style="
+              --st4rt-slide-kicker-c: {{ b.settings.kicker_color }};
+              --st4rt-slide-title-c: {{ b.settings.title_color }};
+              --st4rt-slide-text-c: {{ b.settings.text_color }};
+
+              /* X/Y SIEMPRE como número (sin %) para que el CSS aplique el % */
+              --st4rt-pack-x-d: {{ b.settings.pack_x_desktop }};
+              --st4rt-pack-y-d: {{ b.settings.pack_y_desktop }};
+              --st4rt-pack-s-d: {{ b.settings.pack_scale_desktop | divided_by: 100.0 }};
+              --st4rt-pack-x-m: {{ b.settings.pack_x_mobile }};
+              --st4rt-pack-y-m: {{ b.settings.pack_y_mobile }};
+              --st4rt-pack-s-m: {{ b.settings.pack_scale_mobile | divided_by: 100.0 }};
+
+              --st4rt-bg-zoom: {{ b.settings.bg_zoom | divided_by: 100.0 }};
+
+              --st4rt-bg-opacity: {{ b.settings.bg_opacity | divided_by: 100.0 }};
+              --st4rt-bg-blur: {{ b.settings.bg_blur }}px;
+              --st4rt-bg-saturate: {{ b.settings.bg_saturate | divided_by: 100.0 }};
+
+              --st4rt-bgfx-opacity: {{ b.settings.bgfx_opacity | divided_by: 100.0 }};
+              --st4rt-bgfx-blur: {{ b.settings.bgfx_blur }}px;
+              --st4rt-bgfx-saturate: {{ b.settings.bgfx_saturate | divided_by: 100.0 }};
+
+              {% if bg != blank %}
+                --st4rt-bg-url: url('{{ bg | image_url: width: 2400 }}');
+              {% endif %}
+              {% if bgfx != blank %}
+                --st4rt-bgfx-url: url('{{ bgfx | image_url: width: 1200 }}');
+              {% elsif bg != blank %}
+                --st4rt-bgfx-url: url('{{ bg | image_url: width: 1200 }}');
+              {% endif %}
+            "
+            {{ block.shopify_attributes }}
+          >
+            <div class="st4rt-hero__bg">
+              {% if bg != blank %}
+                {% if forloop.first %}
+                  {{
+                    bg
+                    | image_url: width: 2400
+                    | image_tag:
+                      loading: 'eager',
+                      fetchpriority: 'high',
+                      decoding: 'async',
+                      sizes: '100vw',
+                      widths: '800,1200,1600,2000,2400',
+                      alt: ''
+                  }}
+                {% else %}
+                  {{
+                    bg
+                    | image_url: width: 2400
+                    | image_tag:
+                      loading: 'lazy',
+                      decoding: 'async',
+                      sizes: '100vw',
+                      widths: '800,1200,1600,2000,2400',
+                      alt: ''
+                  }}
+                {% endif %}
+              {% endif %}
+              <span class="st4rt-hero__overlay" aria-hidden="true"></span>
+            </div>
+
+            <div class="st4rt-hero__bgfx" aria-hidden="true"></div>
+
+            <div class="st4rt-hero__content">
+              <div class="st4rt-hero__text">
+                {% if b.settings.kicker != blank %}
+                  <div class="st4rt-hero__kicker">{{ b.settings.kicker | escape }}</div>
+                {% endif %}
+
+                {% if b.settings.title != blank %}
+                  <h2 class="st4rt-hero__title">{{ b.settings.title | escape }}</h2>
+                {% endif %}
+
+                {% if b.settings.text != blank %}
+                  <p class="st4rt-hero__desc">{{ b.settings.text | escape }}</p>
+                {% endif %}
+
+                {% comment %}
+                  CTA (Cambio): ahora es un link a URL configurable por slide.
+                  - fallback: si no hay cta_url, usa product.url (si existe).
+                  - si no hay ninguno, no se renderiza botón.
+                {% endcomment %}
+                {% if cta_url != blank %}
+                  <div class="st4rt-hero__ctas">
+                    <a class="st4rt-btn st4rt-btn--primary" href="{{ cta_url }}">
+                      {{ cta_label | escape }}
+                    </a>
+                  </div>
+                {% endif %}
+
+                {% if b.settings.badge_text != blank %}
+                  <div class="st4rt-hero__badge">{{ b.settings.badge_text | escape }}</div>
+                {% endif %}
+              </div>
+
+              <div class="st4rt-hero__pack" aria-hidden="true">
+                <div class="st4rt-hero__pack-inner">
+                  <picture>
+                    {% if pack_m != blank %}
+                      <source
+                        media="(max-width: 749px)"
+                        srcset="{{ pack_m | image_url: width: 1200 }} 1200w, {{ pack_m | image_url: width: 800 }} 800w, {{ pack_m | image_url: width: 480 }} 480w"
+                        sizes="(max-width: 749px) 90vw, 480px"
+                      >
+                    {% endif %}
+
+                    {% if pack_d != blank %}
+                      <img
+                        class="st4rt-hero__pack-img"
+                        src="{{ pack_d | image_url: width: 1600 }}"
+                        srcset="{{ pack_d | image_url: width: 1600 }} 1600w, {{ pack_d | image_url: width: 1200 }} 1200w, {{ pack_d | image_url: width: 960 }} 960w, {{ pack_d | image_url: width: 720 }} 720w, {{ pack_d | image_url: width: 480 }} 480w"
+                        sizes="(max-width: 749px) 90vw, 520px"
+                        alt="{{ b.settings.title | escape }}"
+                        loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                        fetchpriority="{% if forloop.first %}high{% else %}auto{% endif %}"
+                        decoding="async"
+                        width="{{ pack_d.width }}"
+                        height="{{ pack_d.height }}"
+                      >
+                    {% elsif pack_m != blank %}
+                      <img
+                        class="st4rt-hero__pack-img"
+                        src="{{ pack_m | image_url: width: 1200 }}"
+                        alt="{{ b.settings.title | escape }}"
+                        loading="{% if forloop.first %}eager{% else %}lazy{% endif %}"
+                        fetchpriority="{% if forloop.first %}high{% else %}auto{% endif %}"
+                        decoding="async"
+                        width="{{ pack_m.width }}"
+                        height="{{ pack_m.height }}"
+                      >
+                    {% endif %}
+                  </picture>
+                </div>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+
+      {% if section.settings.show_arrows %}
+        <div class="st4rt-hero__nav">
+          <button
+            class="st4rt-hero__arrow"
+            type="button"
+            data-prev
+            aria-controls="st4rt-hero-track-{{ sid }}"
+            aria-label="Slide anterior del carrusel"
+          >
+            ‹
+          </button>
+          <button
+            class="st4rt-hero__arrow"
+            type="button"
+            data-next
+            aria-controls="st4rt-hero-track-{{ sid }}"
+            aria-label="Siguiente slide del carrusel"
+          >
+            ›
+          </button>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if section.settings.show_dots %}
+      <div class="st4rt-hero__dots" aria-label="Paginación del carrusel"></div>
+    {% endif %}
+    <p class="st4rt-hero__sr-only" data-live-status aria-live="polite" aria-atomic="true"></p>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "St4rt Carrusel Productos",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "full_width",
+      "label": "Ancho completo",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "section_bg",
+      "label": "Fondo sección",
+      "default": "#0B0D10"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Color overlay",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Opacidad overlay",
+      "min": 0,
+      "max": 90,
+      "step": 1,
+      "unit": "%",
+      "default": 55
+    },
+    {
+      "type": "range",
+      "id": "height_desktop",
+      "label": "Alto desktop",
+      "min": 420,
+      "max": 860,
+      "step": 10,
+      "unit": "px",
+      "default": 640
+    },
+    {
+      "type": "range",
+      "id": "height_mobile",
+      "label": "Alto mobile",
+      "min": 520,
+      "max": 980,
+      "step": 10,
+      "unit": "px",
+      "default": 700
+    },
+    {
+      "type": "range",
+      "id": "padding_y_desktop",
+      "label": "Padding vertical desktop",
+      "min": 0,
+      "max": 140,
+      "step": 2,
+      "unit": "px",
+      "default": 54
+    },
+    {
+      "type": "range",
+      "id": "padding_y_mobile",
+      "label": "Padding vertical mobile",
+      "min": 0,
+      "max": 140,
+      "step": 2,
+      "unit": "px",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "gap_desktop",
+      "label": "Gap desktop",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "default": 22
+    },
+    {
+      "type": "range",
+      "id": "gap_mobile",
+      "label": "Gap mobile",
+      "min": 0,
+      "max": 60,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "radius",
+      "label": "Radio contenedor",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_seconds",
+      "label": "Segundos autoplay",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 6
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Mostrar dots",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Mostrar flechas",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "loop_slides",
+      "label": "Loop infinito",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "reduce_motion",
+      "label": "Reducir animaciones",
+      "default": false
+    },
+    {
+      "type": "color",
+      "id": "kicker_color",
+      "label": "Color kicker",
+      "default": "#D8F213"
+    },
+    {
+      "type": "color",
+      "id": "title_color",
+      "label": "Color título",
+      "default": "#F2F2F2"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Color texto",
+      "default": "#CFD6DD"
+    },
+    {
+      "type": "range",
+      "id": "title_size_desktop",
+      "label": "Tamaño título desktop",
+      "min": 24,
+      "max": 72,
+      "step": 1,
+      "unit": "px",
+      "default": 44
+    },
+    {
+      "type": "range",
+      "id": "title_size_mobile",
+      "label": "Tamaño título mobile",
+      "min": 20,
+      "max": 52,
+      "step": 1,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "text_size_desktop",
+      "label": "Tamaño texto desktop",
+      "min": 12,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "text_size_mobile",
+      "label": "Tamaño texto mobile",
+      "min": 12,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "font_picker",
+      "id": "title_font",
+      "label": "Fuente títulos",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "font_picker",
+      "id": "body_font",
+      "label": "Fuente textos",
+      "default": "assistant_n4"
+    },
+    {
+      "type": "text",
+      "id": "default_cta_label",
+      "label": "Texto botón por defecto",
+      "default": "Ver detalles"
+    },
+    {
+      "type": "range",
+      "id": "text_margin_left_desktop",
+      "label": "Margen izquierdo texto desktop",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "text_margin_left_mobile",
+      "label": "Margen izquierdo texto mobile",
+      "min": 0,
+      "max": 60,
+      "step": 2,
+      "unit": "px",
+      "default": 0
+    },
+
+    {
+      "type": "color",
+      "id": "btn_bg",
+      "label": "Botón fondo",
+      "default": "#D8F213"
+    },
+    {
+      "type": "color",
+      "id": "btn_color",
+      "label": "Botón texto",
+      "default": "#0B0D10"
+    },
+    {
+      "type": "color",
+      "id": "btn_border_color",
+      "label": "Botón borde color",
+      "default": "rgba(0,0,0,0.00)"
+    },
+    {
+      "type": "range",
+      "id": "btn_border_width",
+      "label": "Botón borde ancho",
+      "min": 0,
+      "max": 8,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "btn_radius",
+      "label": "Botón radio",
+      "min": 0,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "color",
+      "id": "btn_bg_hover",
+      "label": "Botón hover fondo",
+      "default": "#0B0D10"
+    },
+    {
+      "type": "color",
+      "id": "btn_color_hover",
+      "label": "Botón hover texto",
+      "default": "#F2F2F2"
+    },
+    {
+      "type": "color",
+      "id": "btn_border_color_hover",
+      "label": "Botón hover borde",
+      "default": "#F2F2F2"
+    },
+    {
+      "type": "range",
+      "id": "btn_font_size_desktop",
+      "label": "Botón font size desktop",
+      "min": 12,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "btn_font_size_mobile",
+      "label": "Botón font size mobile",
+      "min": 12,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "btn_height_desktop",
+      "label": "Botón alto desktop",
+      "min": 34,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "default": 46
+    },
+    {
+      "type": "range",
+      "id": "btn_height_mobile",
+      "label": "Botón alto mobile",
+      "min": 34,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "default": 48
+    },
+    {
+      "type": "range",
+      "id": "btn_min_width_desktop",
+      "label": "Botón min ancho desktop",
+      "min": 0,
+      "max": 420,
+      "step": 10,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "select",
+      "id": "btn_font_weight",
+      "label": "Botón font weight",
+      "options": [
+        { "value": "700", "label": "700" },
+        { "value": "800", "label": "800" },
+        { "value": "900", "label": "900" }
+      ],
+      "default": "900"
+    },
+    {
+      "type": "select",
+      "id": "btn_text_transform",
+      "label": "Botón text transform",
+      "options": [
+        { "value": "none", "label": "Como lo escribas" },
+        { "value": "uppercase", "label": "Mayúsculas" },
+        { "value": "lowercase", "label": "Minúsculas" },
+        { "value": "capitalize", "label": "Capitalizado" }
+      ],
+      "default": "none"
+    },
+
+    {
+      "type": "color",
+      "id": "dot_color",
+      "label": "Dot color",
+      "default": "rgba(255,255,255,0.35)"
+    },
+    {
+      "type": "color",
+      "id": "dot_active_color",
+      "label": "Dot activo",
+      "default": "#D8F213"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        { "type": "image_picker", "id": "bg_image", "label": "Imagen fondo" },
+        { "type": "image_picker", "id": "bgfx_image", "label": "Imagen preprocesada efecto (opcional)" },
+        { "type": "image_picker", "id": "pack_image_desktop", "label": "Packshot desktop" },
+        { "type": "image_picker", "id": "pack_image_mobile", "label": "Packshot mobile" },
+
+        { "type": "text", "id": "kicker", "label": "Kicker", "default": "St4rt car care" },
+        { "type": "text", "id": "title", "label": "Título", "default": "Producto" },
+        { "type": "text", "id": "text", "label": "Texto", "default": "Beneficio principal" },
+        { "type": "text", "id": "badge_text", "label": "Badge", "default": "Envío rápido en Colombia" },
+
+        { "type": "text", "id": "cta_label", "label": "Texto botón", "default": "Ver detalles" },
+
+        {
+          "type": "url",
+          "id": "cta_url",
+          "label": "URL botón (Opcional)"
+        },
+
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Producto (Fallback URL)"
+        },
+
+        { "type": "color", "id": "kicker_color", "label": "Kicker color", "default": "#D8F213" },
+        { "type": "color", "id": "title_color", "label": "Título color", "default": "#F2F2F2" },
+        { "type": "color", "id": "text_color", "label": "Texto color", "default": "#CFD6DD" },
+
+        { "type": "range", "id": "pack_x_desktop", "label": "Pack X desktop", "min": -100, "max": 200, "step": 5, "unit": "%", "default": 60 },
+        { "type": "range", "id": "pack_y_desktop", "label": "Pack Y desktop", "min": -100, "max": 200, "step": 5, "unit": "%", "default": 40 },
+        { "type": "range", "id": "pack_scale_desktop", "label": "Pack scale desktop", "min": 60, "max": 180, "step": 2, "unit": "%", "default": 112 },
+
+        { "type": "range", "id": "pack_x_mobile", "label": "Pack X mobile", "min": -100, "max": 200, "step": 5, "unit": "%", "default": 70 },
+        { "type": "range", "id": "pack_y_mobile", "label": "Pack Y mobile", "min": -100, "max": 200, "step": 5, "unit": "%", "default": 45 },
+        { "type": "range", "id": "pack_scale_mobile", "label": "Pack scale mobile", "min": 60, "max": 180, "step": 2, "unit": "%", "default": 110 },
+
+        { "type": "range", "id": "bg_zoom", "label": "Zoom fondo", "min": 100, "max": 130, "step": 1, "unit": "%", "default": 106 },
+        { "type": "range", "id": "bg_opacity", "label": "Opacidad fondo", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 85 },
+        { "type": "range", "id": "bg_blur", "label": "Blur fondo", "min": 0, "max": 24, "step": 1, "unit": "px", "default": 10 },
+        { "type": "range", "id": "bg_saturate", "label": "Saturación fondo", "min": 50, "max": 180, "step": 2, "unit": "%", "default": 106 },
+
+        { "type": "range", "id": "bgfx_opacity", "label": "Opacidad glow", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "range", "id": "bgfx_blur", "label": "Blur glow", "min": 0, "max": 70, "step": 1, "unit": "px", "default": 26 },
+        { "type": "range", "id": "bgfx_saturate", "label": "Saturación glow", "min": 50, "max": 220, "step": 2, "unit": "%", "default": 116 }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "St4rt Carrusel Productos",
+      "category": "St4rt"
+    }
+  ]
+}
+{% endschema %}

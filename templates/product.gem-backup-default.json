@@ -1,0 +1,283 @@
+{
+  "sections": {
+    "main": {
+      "type": "main-product",
+      "blocks": {
+        "vendor": {
+          "type": "text",
+          "settings": {
+            "text": "",
+            "text_style": "body"
+          }
+        },
+        "title": {
+          "type": "title",
+          "settings": {}
+        },
+        "judge_me_reviews_preview_badge_TLgnye": {
+          "type": "shopify:\/\/apps\/judge-me-reviews\/blocks\/preview_badge\/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
+          "settings": {}
+        },
+        "rating": {
+          "type": "rating",
+          "settings": {}
+        },
+        "price": {
+          "type": "price",
+          "settings": {}
+        },
+        "variant_picker": {
+          "type": "variant_picker",
+          "settings": {
+            "picker_type": "button",
+            "swatch_shape": "circle"
+          }
+        },
+        "quantity_selector": {
+          "type": "quantity_selector",
+          "settings": {}
+        },
+        "buy_buttons": {
+          "type": "buy_buttons",
+          "settings": {
+            "show_dynamic_checkout": true,
+            "show_gift_card_recipient": true
+          }
+        },
+        "description": {
+          "type": "description",
+          "settings": {}
+        },
+        "share": {
+          "type": "share",
+          "disabled": true,
+          "settings": {
+            "share_label": "Share"
+          }
+        }
+      },
+      "block_order": [
+        "vendor",
+        "title",
+        "judge_me_reviews_preview_badge_TLgnye",
+        "rating",
+        "price",
+        "variant_picker",
+        "quantity_selector",
+        "buy_buttons",
+        "description",
+        "share"
+      ],
+      "settings": {
+        "enable_sticky_info": true,
+        "color_scheme": "scheme-1",
+        "media_size": "small",
+        "constrain_to_viewport": true,
+        "media_fit": "contain",
+        "gallery_layout": "thumbnail_slider",
+        "mobile_thumbnails": "hide",
+        "media_position": "left",
+        "image_zoom": "lightbox",
+        "hide_variants": true,
+        "enable_video_looping": false,
+        "padding_top": 16,
+        "padding_bottom": 16
+      }
+    },
+    "multicolumn_CPQbRh": {
+      "type": "multicolumn",
+      "blocks": {
+        "column_99DaAY": {
+          "type": "column",
+          "settings": {
+            "title": "💨 Aplicación rápida y sin complicaciones",
+            "text": "",
+            "link_label": "",
+            "link": ""
+          }
+        },
+        "column_KrhTBG": {
+          "type": "column",
+          "settings": {
+            "title": "👃 Neutraliza olores de sudor y humedad",
+            "text": "",
+            "link_label": "",
+            "link": ""
+          }
+        },
+        "column_ETFppk": {
+          "type": "column",
+          "settings": {
+            "title": "🦠 Desinfecta y protege contra microorganismos",
+            "text": "",
+            "link_label": "",
+            "link": ""
+          }
+        },
+        "column_3zyzXr": {
+          "type": "column",
+          "settings": {
+            "title": "⚡ Ideal para motociclistas que usan su casco con frecuencia",
+            "text": "",
+            "link_label": "",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "column_99DaAY",
+        "column_KrhTBG",
+        "column_ETFppk",
+        "column_3zyzXr"
+      ],
+      "settings": {
+        "title": "Beneficios",
+        "heading_size": "h1",
+        "image_width": "full",
+        "image_ratio": "adapt",
+        "button_label": "",
+        "button_link": "",
+        "columns_desktop": 4,
+        "column_alignment": "left",
+        "background_style": "primary",
+        "color_scheme": "",
+        "columns_mobile": "1",
+        "swipe_on_mobile": false,
+        "padding_top": 16,
+        "padding_bottom": 16
+      }
+    },
+    "rich_text_nqWh7Y": {
+      "type": "rich-text",
+      "blocks": {
+        "heading_g4AwWA": {
+          "type": "heading",
+          "settings": {
+            "heading": "Modo de Uso",
+            "heading_size": "h1"
+          }
+        },
+        "text_YgEjXJ": {
+          "type": "text",
+          "settings": {
+            "text": "<ol><li>Asegúrese de que el interior del casco esté seco.<\/li><li>Agite bien el envase antes de usar.<\/li><li>Aplique el producto a 15 cm de distancia en el interior del casco, con movimientos circulares para una cobertura uniforme.<\/li><li>Deje ventilar por al menos 5 segundos antes de usar el casco.<\/li><li>Si es necesario, repita la aplicación.<\/li><\/ol>"
+          }
+        }
+      },
+      "block_order": [
+        "heading_g4AwWA",
+        "text_YgEjXJ"
+      ],
+      "settings": {
+        "desktop_content_position": "left",
+        "content_alignment": "left",
+        "color_scheme": "",
+        "full_width": true,
+        "padding_top": 16,
+        "padding_bottom": 16
+      }
+    },
+    "rich_text_YFNDHn": {
+      "type": "rich-text",
+      "blocks": {
+        "heading_HdrQ9n": {
+          "type": "heading",
+          "settings": {
+            "heading": "Composición",
+            "heading_size": "h1"
+          }
+        },
+        "text_4amPH9": {
+          "type": "text",
+          "settings": {
+            "text": "<ul><li>Gases propelentes: Propane\/Butane<\/li><li>Desinfectantes y solventes: Alcohol, Water, O-Phenylphenol, Sodium Nitrite<\/li><li>Fragancia y agentes de limpieza: Parfum, Isopropyl Myristate, surfactantes y estabilizantes<\/li><\/ul>"
+          }
+        }
+      },
+      "block_order": [
+        "heading_HdrQ9n",
+        "text_4amPH9"
+      ],
+      "settings": {
+        "desktop_content_position": "left",
+        "content_alignment": "left",
+        "color_scheme": "",
+        "full_width": true,
+        "padding_top": 16,
+        "padding_bottom": 16
+      }
+    },
+    "rich_text_wzGjYG": {
+      "type": "rich-text",
+      "blocks": {
+        "heading_JPWtJ8": {
+          "type": "heading",
+          "settings": {
+            "heading": "Registro Sanitario",
+            "heading_size": "h1"
+          }
+        },
+        "text_Pifnrf": {
+          "type": "text",
+          "settings": {
+            "text": "<p>Notificación Sanitaria Obligatoria: NSOH08486-20CO<\/p>"
+          }
+        }
+      },
+      "block_order": [
+        "heading_JPWtJ8",
+        "text_Pifnrf"
+      ],
+      "settings": {
+        "desktop_content_position": "left",
+        "content_alignment": "left",
+        "color_scheme": "",
+        "full_width": true,
+        "padding_top": 16,
+        "padding_bottom": 16
+      }
+    },
+    "related-products": {
+      "type": "related-products",
+      "settings": {
+        "heading": "Otras opciones St4rt con flow",
+        "heading_size": "h0",
+        "products_to_show": 2,
+        "columns_desktop": 3,
+        "columns_mobile": "2",
+        "color_scheme": "scheme-04894a5e-0eb3-49db-bc4a-ee9a4652b139",
+        "image_ratio": "square",
+        "image_shape": "default",
+        "show_secondary_image": true,
+        "show_vendor": false,
+        "show_rating": true,
+        "padding_top": 32,
+        "padding_bottom": 60
+      }
+    },
+    "1741972986e8cc3f2c": {
+      "type": "apps",
+      "blocks": {
+        "judge_me_reviews_review_widget_q6CFA9": {
+          "type": "shopify:\/\/apps\/judge-me-reviews\/blocks\/review_widget\/61ccd3b1-a9f2-4160-9fe9-4fec8413e5d8",
+          "settings": {}
+        }
+      },
+      "block_order": [
+        "judge_me_reviews_review_widget_q6CFA9"
+      ],
+      "settings": {
+        "include_margins": true
+      }
+    }
+  },
+  "order": [
+    "main",
+    "multicolumn_CPQbRh",
+    "rich_text_nqWh7Y",
+    "rich_text_YFNDHn",
+    "rich_text_wzGjYG",
+    "related-products",
+    "1741972986e8cc3f2c"
+  ]
+}

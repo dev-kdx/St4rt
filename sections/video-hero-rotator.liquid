@@ -1,0 +1,230 @@
+{%- comment -%}
+  SECTION: Video Hero Rotator (Optimizado)
+  - Carga SOLO el video activo (desktop o mobile)
+  - Lazy-init con IntersectionObserver
+  - Prefetch suave del próximo slide (solo viewport activo)
+  - CSS/JS a assets (cache + menos HTML)
+{%- endcomment -%}
+
+{%- assign slides = section.blocks | where: "type", "slide" -%}
+{%- if slides.size > 0 -%}
+
+{{ 'st4rt-hero-rotator.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'st4rt-hero-rotator.js' | asset_url }}" defer></script>
+
+<section
+  class="st4rt-hero"
+  id="st4rt-hero-{{ section.id }}"
+  data-st4rt-hero
+  data-section-id="{{ section.id }}"
+  data-autoplay="{{ section.settings.autoplay }}"
+  data-loop="{{ section.settings.loop }}"
+  style="
+    --st4rt-overlay-alpha: {{ section.settings.overlay_darkness | divided_by: 100.0 }};
+    --st4rt-overlay-padding: {{ section.settings.overlay_padding }}px;
+    --st4rt-content-max: {{ section.settings.content_max_width }}px;
+    --st4rt-content-v: {{ section.settings.content_vertical_align }};
+    --st4rt-content-h: {{ section.settings.content_horizontal_align }};
+    --st4rt-text-align: {{ section.settings.text_align }};
+
+    --st4rt-c1: {{ section.settings.color_word_1 }};
+    --st4rt-c2: {{ section.settings.color_word_2 }};
+
+    --st4rt-outline-w: {{ section.settings.outline_width }}px;
+    --st4rt-outline-c: {{ section.settings.outline_color }};
+    --st4rt-outline-fill-hover: {{ section.settings.outline_fill_hover }};
+
+    --st4rt-accent: {{ section.settings.accent_color }};
+
+    --st4rt-heading-font: {{ section.settings.heading_font_family }};
+    --st4rt-button-font: {{ section.settings.button_font_family }};
+
+    --st4rt-h1-color: {{ section.settings.h1_color }};
+    --st4rt-h1-size-d: {{ section.settings.h1_size_desktop }}px;
+    --st4rt-h1-size-m: {{ section.settings.h1_size_mobile }}px;
+    --st4rt-h1-weight: {{ section.settings.h1_weight }};
+    --st4rt-h1-ls: {{ section.settings.h1_letter_spacing }}px;
+    --st4rt-h1-transform: {{ section.settings.h1_transform }};
+    --st4rt-h1-mb: {{ section.settings.h1_margin_bottom }}px;
+
+    --st4rt-h2-color: {{ section.settings.h2_color }};
+    --st4rt-h2-size-d: {{ section.settings.h2_size_desktop }}px;
+    --st4rt-h2-size-m: {{ section.settings.h2_size_mobile }}px;
+    --st4rt-h2-weight: {{ section.settings.h2_weight }};
+    --st4rt-h2-ls: {{ section.settings.h2_letter_spacing }}px;
+    --st4rt-h2-transform: {{ section.settings.h2_transform }};
+    --st4rt-h2-mb: {{ section.settings.h2_margin_bottom }}px;
+
+    --st4rt-btn-bg: {{ section.settings.button_bg_color }};
+    --st4rt-btn-tx: {{ section.settings.button_text_color }};
+    --st4rt-btn-bd: {{ section.settings.button_border_color }};
+    --st4rt-btn-bg-h: {{ section.settings.button_bg_hover }};
+    --st4rt-btn-tx-h: {{ section.settings.button_text_hover }};
+    --st4rt-btn-bd-h: {{ section.settings.button_border_hover }};
+    --st4rt-btn-fs-d: {{ section.settings.button_font_size_desktop }}px;
+    --st4rt-btn-fs-m: {{ section.settings.button_font_size_mobile }}px;
+    --st4rt-btn-fw: {{ section.settings.button_font_weight }};
+    --st4rt-btn-bw: {{ section.settings.button_border_width }}px;
+    --st4rt-btn-r: {{ section.settings.button_radius }}px;
+    --st4rt-btn-px: {{ section.settings.button_padding_x }}px;
+    --st4rt-btn-py: {{ section.settings.button_padding_y }}px;
+    --st4rt-btn-ls: {{ section.settings.button_letter_spacing }}px;
+    --st4rt-btn-transform: {{ section.settings.button_transform }};
+  "
+>
+  <div class="st4rt-hero__media">
+    <!-- Desktop (NO src inicial) -->
+    <video
+      class="st4rt-hide-mobile"
+      muted
+      playsinline
+      loop
+      preload="none"
+      aria-hidden="true"
+    ></video>
+
+    <!-- Mobile (NO src inicial) -->
+    <video
+      class="st4rt-hide-desktop"
+      muted
+      playsinline
+      loop
+      preload="none"
+      aria-hidden="true"
+    ></video>
+  </div>
+
+  <div class="st4rt-hero__overlay" aria-hidden="false">
+    <div class="st4rt-hero__content">
+      <div class="st4rt-hero__h1" data-h1></div>
+      <div class="st4rt-hero__h2" data-h2></div>
+      <a class="st4rt-hero__button" data-btn style="display:none;"></a>
+    </div>
+  </div>
+
+  <script type="application/json" id="st4rt-hero-data-{{ section.id }}">
+    [
+      {%- for block in slides -%}
+        {
+          "desktop_video": {{ block.settings.desktop_video | json }},
+          "mobile_video": {{ block.settings.mobile_video | json }},
+          "h1": {{ block.settings.h1 | json }},
+          "h2": {{ block.settings.h2 | json }},
+          "button_text": {{ block.settings.button_text | json }},
+          "button_url": {{ block.settings.button_url | json }},
+          "duration_ms": {{ block.settings.duration_seconds | times: 1000 | json }}
+        }{%- unless forloop.last -%},{%- endunless -%}
+      {%- endfor -%}
+    ]
+  </script>
+</section>
+
+{% endif %}
+
+{% schema %}
+{
+  "name": "Video Hero Rotator",
+  "tag": "section",
+  "class": "st4rt-video-hero-rotator",
+  "settings": [
+    { "type": "header", "content": "Comportamiento" },
+    { "type": "checkbox", "id": "autoplay", "label": "Rotación automática", "default": true },
+    { "type": "checkbox", "id": "loop", "label": "Repetir al final", "default": true },
+
+    { "type": "header", "content": "Overlay" },
+    { "type": "range", "id": "overlay_darkness", "min": 0, "max": 90, "step": 5, "unit": "%", "label": "Oscurecer overlay", "default": 45 },
+    { "type": "range", "id": "overlay_padding", "min": 10, "max": 80, "step": 2, "unit": "px", "label": "Padding overlay", "default": 30 },
+    { "type": "range", "id": "content_max_width", "min": 320, "max": 1200, "step": 10, "unit": "px", "label": "Ancho máximo del contenido", "default": 720 },
+
+    { "type": "select", "id": "content_vertical_align", "label": "Alineación vertical", "default": "center", "options": [
+      { "value": "flex-start", "label": "Arriba" },
+      { "value": "center", "label": "Centro" },
+      { "value": "flex-end", "label": "Abajo" }
+    ]},
+    { "type": "select", "id": "content_horizontal_align", "label": "Alineación horizontal", "default": "center", "options": [
+      { "value": "flex-start", "label": "Izquierda" },
+      { "value": "center", "label": "Centro" },
+      { "value": "flex-end", "label": "Derecha" }
+    ]},
+    { "type": "select", "id": "text_align", "label": "Alineación del texto", "default": "center", "options": [
+      { "value": "left", "label": "Izquierda" },
+      { "value": "center", "label": "Centro" },
+      { "value": "right", "label": "Derecha" }
+    ]},
+
+    { "type": "header", "content": "Colores especiales" },
+    { "type": "color", "id": "color_word_1", "label": "Color clase .c1", "default": "#D8F213" },
+    { "type": "color", "id": "color_word_2", "label": "Color clase .c2", "default": "#E4F2AE" },
+
+    { "type": "header", "content": "Outline" },
+    { "type": "range", "id": "outline_width", "min": 0, "max": 6, "step": 1, "unit": "px", "label": "Grosor del borde", "default": 2 },
+    { "type": "color", "id": "outline_color", "label": "Color del borde", "default": "#FFFFFF" },
+    { "type": "color", "id": "outline_fill_hover", "label": "Relleno en hover", "default": "#D8F213" },
+    { "type": "color", "id": "accent_color", "label": "Color acento", "default": "#D8F213" },
+
+    { "type": "header", "content": "Tipografías" },
+    { "type": "text", "id": "heading_font_family", "label": "Font family headings", "default": "inherit" },
+    { "type": "text", "id": "button_font_family", "label": "Font family botón", "default": "inherit" },
+
+    { "type": "header", "content": "H1" },
+    { "type": "color", "id": "h1_color", "label": "Color H1", "default": "#F2F2F2" },
+    { "type": "range", "id": "h1_size_desktop", "min": 24, "max": 90, "step": 1, "unit": "px", "label": "Tamaño desktop", "default": 56 },
+    { "type": "range", "id": "h1_size_mobile", "min": 18, "max": 56, "step": 1, "unit": "px", "label": "Tamaño mobile", "default": 34 },
+    { "type": "range", "id": "h1_weight", "min": 100, "max": 900, "step": 100, "label": "Peso", "default": 700 },
+    { "type": "range", "id": "h1_letter_spacing", "min": -2, "max": 8, "step": 1, "unit": "px", "label": "Letter spacing", "default": 0 },
+    { "type": "select", "id": "h1_transform", "label": "Transform", "default": "none", "options": [
+      { "value": "none", "label": "Normal" },
+      { "value": "uppercase", "label": "Mayúsculas" }
+    ]},
+    { "type": "range", "id": "h1_margin_bottom", "min": 0, "max": 40, "step": 1, "unit": "px", "label": "Margen inferior", "default": 10 },
+
+    { "type": "header", "content": "H2" },
+    { "type": "color", "id": "h2_color", "label": "Color H2", "default": "#F2F2F2" },
+    { "type": "range", "id": "h2_size_desktop", "min": 12, "max": 40, "step": 1, "unit": "px", "label": "Tamaño desktop", "default": 18 },
+    { "type": "range", "id": "h2_size_mobile", "min": 12, "max": 30, "step": 1, "unit": "px", "label": "Tamaño mobile", "default": 16 },
+    { "type": "range", "id": "h2_weight", "min": 100, "max": 900, "step": 100, "label": "Peso", "default": 400 },
+    { "type": "range", "id": "h2_letter_spacing", "min": -2, "max": 8, "step": 1, "unit": "px", "label": "Letter spacing", "default": 0 },
+    { "type": "select", "id": "h2_transform", "label": "Transform", "default": "none", "options": [
+      { "value": "none", "label": "Normal" },
+      { "value": "uppercase", "label": "Mayúsculas" }
+    ]},
+    { "type": "range", "id": "h2_margin_bottom", "min": 0, "max": 60, "step": 1, "unit": "px", "label": "Margen inferior", "default": 18 },
+
+    { "type": "header", "content": "Botón" },
+    { "type": "color", "id": "button_bg_color", "label": "Fondo", "default": "#D8F213" },
+    { "type": "color", "id": "button_text_color", "label": "Texto", "default": "#0B0D10" },
+    { "type": "color", "id": "button_border_color", "label": "Borde", "default": "#D8F213" },
+    { "type": "color", "id": "button_bg_hover", "label": "Fondo hover", "default": "#E4F2AE" },
+    { "type": "color", "id": "button_text_hover", "label": "Texto hover", "default": "#0B0D10" },
+    { "type": "color", "id": "button_border_hover", "label": "Borde hover", "default": "#E4F2AE" },
+    { "type": "range", "id": "button_font_size_desktop", "min": 10, "max": 30, "step": 1, "unit": "px", "label": "Tamaño desktop", "default": 16 },
+    { "type": "range", "id": "button_font_size_mobile", "min": 10, "max": 24, "step": 1, "unit": "px", "label": "Tamaño mobile", "default": 15 },
+    { "type": "range", "id": "button_font_weight", "min": 100, "max": 900, "step": 100, "label": "Peso", "default": 700 },
+    { "type": "range", "id": "button_border_width", "min": 0, "max": 6, "step": 1, "unit": "px", "label": "Borde", "default": 2 },
+    { "type": "range", "id": "button_radius", "min": 0, "max": 40, "step": 1, "unit": "px", "label": "Radio", "default": 12 },
+    { "type": "range", "id": "button_padding_x", "min": 8, "max": 44, "step": 1, "unit": "px", "label": "Padding X", "default": 22 },
+    { "type": "range", "id": "button_padding_y", "min": 6, "max": 30, "step": 1, "unit": "px", "label": "Padding Y", "default": 12 },
+    { "type": "range", "id": "button_letter_spacing", "min": -2, "max": 8, "step": 1, "unit": "px", "label": "Letter spacing", "default": 0 },
+    { "type": "select", "id": "button_transform", "label": "Transform", "default": "uppercase", "options": [
+      { "value": "none", "label": "Normal" },
+      { "value": "uppercase", "label": "Mayúsculas" }
+    ]}
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        { "type": "url", "id": "desktop_video", "label": "Video Desktop URL" },
+        { "type": "url", "id": "mobile_video", "label": "Video Mobile URL" },
+        { "type": "richtext", "id": "h1", "label": "H1" },
+        { "type": "richtext", "id": "h2", "label": "H2" },
+        { "type": "text", "id": "button_text", "label": "Texto botón" },
+        { "type": "url", "id": "button_url", "label": "URL botón" },
+        { "type": "range", "id": "duration_seconds", "min": 2, "max": 60, "step": 1, "unit": "s", "label": "Duración", "default": 6 }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Video Hero Rotator", "category": "St4rt" }]
+}
+{% endschema %}

@@ -1,0 +1,222 @@
+{%- comment -%}
+  SECTION: St4rt Stats Bar
+  - Hasta 5 columnas
+  - Fade in al entrar en viewport, una sola vez
+  - Icono o imagen opcional
+  - Título, subtítulo, párrafo opcionales
+  - Estrellas 0 a 5
+  - Separadores verticales entre columnas, horizontales arriba y abajo del bloque y divisor interno opcional
+{%- endcomment -%}
+
+{{ 'st4rt-stats-bar.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'st4rt-reveal-once.js' | asset_url }}" defer></script>
+
+{%- assign items = section.blocks | where: "type", "item" -%}
+{%- if items.size > 0 -%}
+
+<section
+  class="st4rt-stats"
+  id="st4rt-stats-{{ section.id }}"
+  data-reveal-once
+  style="
+    --st4rt-section-bg: {{ section.settings.section_bg }};
+    --st4rt-section-tx: {{ section.settings.section_text_color }};
+    --st4rt-col-bg: {{ section.settings.column_bg }};
+    --st4rt-col-tx: {{ section.settings.column_text_color }};
+    --st4rt-sep-color: {{ section.settings.separator_color }};
+    --st4rt-sep-w: {{ section.settings.separator_width }}px;
+
+    --st4rt-pad-y: {{ section.settings.padding_y }}px;
+    --st4rt-pad-x: {{ section.settings.padding_x }}px;
+    --st4rt-gap: {{ section.settings.column_gap }}px;
+
+    --st4rt-h-align: {{ section.settings.h_align }};
+    --st4rt-v-align: {{ section.settings.v_align }};
+
+    --st4rt-title-color: {{ section.settings.title_color }};
+    --st4rt-subtitle-color: {{ section.settings.subtitle_color }};
+    --st4rt-body-color: {{ section.settings.body_color }};
+
+    --st4rt-title-size-d: {{ section.settings.title_size_desktop }}px;
+    --st4rt-title-size-m: {{ section.settings.title_size_mobile }}px;
+    --st4rt-subtitle-size-d: {{ section.settings.subtitle_size_desktop }}px;
+    --st4rt-subtitle-size-m: {{ section.settings.subtitle_size_mobile }}px;
+    --st4rt-body-size-d: {{ section.settings.body_size_desktop }}px;
+    --st4rt-body-size-m: {{ section.settings.body_size_mobile }}px;
+
+    --st4rt-title-weight: {{ section.settings.title_weight }};
+    --st4rt-subtitle-weight: {{ section.settings.subtitle_weight }};
+    --st4rt-body-weight: {{ section.settings.body_weight }};
+
+    --st4rt-star-color: {{ section.settings.star_color }};
+    --st4rt-star-size: {{ section.settings.star_size }}px;
+
+    --st4rt-inner-divider-w: {{ section.settings.inner_divider_width }}px;
+  "
+>
+  <div class="st4rt-stats__wrap {% if section.settings.container_full %}is-full{% endif %}">
+    {% if section.settings.show_top_divider %}
+      <div class="st4rt-stats__hsep is-top" aria-hidden="true"></div>
+    {% endif %}
+
+    <div
+      class="st4rt-stats__grid"
+      style="--st4rt-cols: {{ items.size }};"
+      data-vertical-separators="{{ section.settings.show_vertical_separators }}"
+    >
+      {%- for block in items -%}
+        {%- assign t_tag = block.settings.title_tag | default: 'div' -%}
+        {%- assign st_tag = block.settings.subtitle_tag | default: 'div' -%}
+        {%- assign b_tag = block.settings.body_tag | default: 'div' -%}
+
+        <div class="st4rt-stats__col" {{ block.shopify_attributes }}>
+          <div class="st4rt-stats__content">
+            {%- if block.settings.icon != blank -%}
+              <div class="st4rt-stats__icon" aria-hidden="true">
+                {{ block.settings.icon | image_url: width: 160 | image_tag: loading: "lazy", widths: "60,80,120,160", sizes: "80px", alt: "" }}
+              </div>
+            {%- endif -%}
+
+            {%- if block.settings.stars > 0 -%}
+              <div class="st4rt-stats__stars" aria-label="{{ block.settings.stars }} estrellas">
+                {%- for i in (1..5) -%}
+                  {%- if i <= block.settings.stars -%}
+                    <span class="st4rt-star is-on" aria-hidden="true">★</span>
+                  {%- else -%}
+                    <span class="st4rt-star is-off" aria-hidden="true">★</span>
+                  {%- endif -%}
+                {%- endfor -%}
+              </div>
+            {%- endif -%}
+
+            {%- if block.settings.title != blank -%}
+              <{{ t_tag }} class="st4rt-stats__title">{{ block.settings.title }}</{{ t_tag }}>
+            {%- endif -%}
+
+            {%- if block.settings.show_inner_divider -%}
+              <div class="st4rt-stats__inner-divider" aria-hidden="true"></div>
+            {%- endif -%}
+
+            {%- if block.settings.subtitle != blank -%}
+              <{{ st_tag }} class="st4rt-stats__subtitle">{{ block.settings.subtitle }}</{{ st_tag }}>
+            {%- endif -%}
+
+            {%- if block.settings.body != blank -%}
+              <{{ b_tag }} class="st4rt-stats__body">{{ block.settings.body }}</{{ b_tag }}>
+            {%- endif -%}
+          </div>
+        </div>
+      {%- endfor -%}
+    </div>
+
+    {% if section.settings.show_bottom_divider %}
+      <div class="st4rt-stats__hsep is-bottom" aria-hidden="true"></div>
+    {% endif %}
+  </div>
+</section>
+
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "St4rt Stats Bar",
+  "tag": "section",
+  "class": "st4rt-stats-bar",
+  "settings": [
+    { "type": "header", "content": "layout" },
+
+    { "type": "checkbox", "id": "container_full", "label": "Contenedor ancho completo", "default": true },
+
+    { "type": "range", "id": "padding_y", "min": 10, "max": 120, "step": 2, "unit": "px", "label": "Padding vertical", "default": 40 },
+    { "type": "range", "id": "padding_x", "min": 10, "max": 80, "step": 2, "unit": "px", "label": "Padding horizontal", "default": 24 },
+    { "type": "range", "id": "column_gap", "min": 0, "max": 60, "step": 2, "unit": "px", "label": "Separación entre columnas", "default": 0 },
+
+    { "type": "select", "id": "h_align", "label": "Alineación horizontal", "default": "center", "options": [
+      { "value": "flex-start", "label": "Izquierda" },
+      { "value": "center", "label": "Centro" },
+      { "value": "flex-end", "label": "Derecha" }
+    ]},
+    { "type": "select", "id": "v_align", "label": "Alineación vertical", "default": "center", "options": [
+      { "value": "flex-start", "label": "Arriba" },
+      { "value": "center", "label": "Centro" },
+      { "value": "flex-end", "label": "Abajo" }
+    ]},
+
+    { "type": "header", "content": "colores" },
+    { "type": "color", "id": "title_color", "label": "Color título", "default": "#0B0D10" },
+    { "type": "color", "id": "subtitle_color", "label": "Color subtítulo", "default": "#0B0D10" },
+    { "type": "color", "id": "body_color", "label": "Color párrafo", "default": "#0B0D10" },
+    { "type": "color", "id": "section_bg", "label": "Fondo de la sección", "default": "#FFFFFF" },
+    { "type": "color", "id": "section_text_color", "label": "Texto base de la sección", "default": "#0B0D10" },
+    { "type": "color", "id": "column_bg", "label": "Fondo de columnas", "default": "rgba(0,0,0,0)" },
+    { "type": "color", "id": "column_text_color", "label": "Texto de columnas", "default": "#0B0D10" },
+
+    { "type": "header", "content": "separadores" },
+    { "type": "checkbox", "id": "show_vertical_separators", "label": "Separadores verticales entre columnas", "default": true },
+    { "type": "checkbox", "id": "show_top_divider", "label": "Separador horizontal superior", "default": false },
+    { "type": "checkbox", "id": "show_bottom_divider", "label": "Separador horizontal inferior", "default": false },
+    { "type": "color", "id": "separator_color", "label": "Color separadores", "default": "#0B0D10" },
+    { "type": "range", "id": "separator_width", "min": 1, "max": 6, "step": 1, "unit": "px", "label": "Grosor separadores", "default": 1 },
+
+    { "type": "header", "content": "estrellas" },
+    { "type": "color", "id": "star_color", "label": "Color estrellas", "default": "#D8F213" },
+    { "type": "range", "id": "star_size", "min": 10, "max": 40, "step": 1, "unit": "px", "label": "Tamaño estrellas", "default": 18 },
+
+    { "type": "header", "content": "tipografía y tamaños" },
+    { "type": "range", "id": "title_size_desktop", "min": 14, "max": 64, "step": 1, "unit": "px", "label": "Título tamaño desktop", "default": 30 },
+    { "type": "range", "id": "title_size_mobile", "min": 12, "max": 44, "step": 1, "unit": "px", "label": "Título tamaño mobile", "default": 24 },
+    { "type": "range", "id": "subtitle_size_desktop", "min": 10, "max": 30, "step": 1, "unit": "px", "label": "Subtítulo tamaño desktop", "default": 16 },
+    { "type": "range", "id": "subtitle_size_mobile", "min": 10, "max": 26, "step": 1, "unit": "px", "label": "Subtítulo tamaño mobile", "default": 14 },
+    { "type": "range", "id": "body_size_desktop", "min": 10, "max": 28, "step": 1, "unit": "px", "label": "Párrafo tamaño desktop", "default": 14 },
+    { "type": "range", "id": "body_size_mobile", "min": 10, "max": 24, "step": 1, "unit": "px", "label": "Párrafo tamaño mobile", "default": 13 },
+
+    { "type": "range", "id": "title_weight", "min": 100, "max": 900, "step": 100, "label": "Título peso", "default": 800 },
+    { "type": "range", "id": "subtitle_weight", "min": 100, "max": 900, "step": 100, "label": "Subtítulo peso", "default": 500 },
+    { "type": "range", "id": "body_weight", "min": 100, "max": 900, "step": 100, "label": "Párrafo peso", "default": 400 },
+
+    { "type": "header", "content": "divisor interno opcional" },
+    { "type": "range", "id": "inner_divider_width", "min": 1, "max": 6, "step": 1, "unit": "px", "label": "Grosor divisor interno", "default": 1 }
+  ],
+  "blocks": [
+    {
+      "type": "item",
+      "name": "Columna",
+      "limit": 5,
+      "settings": [
+        { "type": "header", "content": "icono o imagen" },
+        { "type": "image_picker", "id": "icon", "label": "Icono o imagen" },
+
+        { "type": "header", "content": "estrellas" },
+        { "type": "range", "id": "stars", "min": 0, "max": 5, "step": 1, "label": "Cantidad de estrellas", "default": 0 },
+
+        { "type": "header", "content": "texto" },
+        { "type": "text", "id": "title", "label": "Título", "default": "300K+" },
+        { "type": "select", "id": "title_tag", "label": "Tipo de título", "default": "h3", "options": [
+          { "value": "h2", "label": "H2" },
+          { "value": "h3", "label": "H3" },
+          { "value": "div", "label": "Texto" }
+        ]},
+
+        { "type": "text", "id": "subtitle", "label": "Subtítulo", "default": "Happy Customers" },
+        { "type": "select", "id": "subtitle_tag", "label": "Tipo de subtítulo", "default": "p", "options": [
+          { "value": "p", "label": "Párrafo" },
+          { "value": "div", "label": "Texto" },
+          { "value": "h4", "label": "H4" }
+        ]},
+
+        { "type": "richtext", "id": "body", "label": "Párrafo opcional", "default": "<p></p>" },
+        { "type": "select", "id": "body_tag", "label": "Tipo de párrafo", "default": "div", "options": [
+          { "value": "div", "label": "Texto" },
+          { "value": "p", "label": "Párrafo" }
+        ]},
+
+        { "type": "header", "content": "divisor interno" },
+        { "type": "checkbox", "id": "show_inner_divider", "label": "Mostrar divisor horizontal dentro de la columna", "default": false }
+      ]
+    }
+  ],
+  "presets": [
+    { "name": "St4rt Stats Bar", "category": "St4rt" }
+  ]
+}
+{% endschema %}
